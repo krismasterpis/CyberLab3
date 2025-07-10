@@ -3,6 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:CyberLab3"
     xmlns:controls="clr-namespace:CyberLab3.Resources.Controls">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/CyberLab3;component/Resources/IconDictionary.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
     <Style TargetType="{x:Type controls:NavButton}">
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -35,6 +40,29 @@
                 <ControlTemplate TargetType="{x:Type controls:NavInfoBar}">
                     <Border x:Name="back" CornerRadius="0,0,32,0" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
                         <TextBlock x:Name="text" FontSize="24" FontWeight="Bold" Text="{TemplateBinding Text}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#2a84f1"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type controls:MeasurementTimer}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:MeasurementTimer}">
+                    <Border Height="40" Background="#e9ecef" CornerRadius="20" BorderThickness="0" Padding="20,0,20,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Background="#e9ecef" BorderThickness="0" Command="{TemplateBinding StartCommand}">
+                                <Path x:Name="iconStart" Width="25" Height="25" Data="{StaticResource IconStart}" Stretch="Uniform" Fill="#2a84f1" Margin="10,0,10,0"/>
+                            </Button>
+                            <Button Background="#e9ecef" BorderThickness="0" Command="{TemplateBinding PauseCommand}">
+                                <Path x:Name="iconPause" Width="25" Height="25" Data="{StaticResource IconPause}" Stretch="Uniform" Fill="#2a84f1" Margin="10,0,10,0"/>
+                            </Button>
+                            <Button Background="#e9ecef" BorderThickness="0" Command="{TemplateBinding RestartCommand}">
+                                <Path x:Name="iconRestart" Width="25" Height="25" Data="{StaticResource IconRestart}" Stretch="Uniform" Fill="#2a84f1" Margin="10,0,10,0"/>
+                            </Button>
+                            <TextBlock Text="{TemplateBinding TimeString}" FontSize="28" FontWeight="Bold" Margin="10,0,10,3" VerticalAlignment="Center" Foreground="#2a84f1"/>
+                        </StackPanel>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

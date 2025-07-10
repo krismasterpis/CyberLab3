@@ -3,7 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:CyberLab3"
              StartupUri="MainWindow.xaml">
+
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <Color x:Key="LabelColor">#FFFFFF</Color>
+            <SolidColorBrush x:Key="LabelBrush" Color="{StaticResource LabelColor}" />
+            <Color x:Key="LabelColorBlue">#2a84f1</Color>
+            <SolidColorBrush x:Key="LabelBlueBrush" Color="{StaticResource LabelColorBlue}" />
+            <Color x:Key="TopBarColor">#2F6AA8</Color>
+            <SolidColorBrush x:Key="TopBarBrush" Color="{StaticResource TopBarColor}" />
+            <Color x:Key="BackgroundColor">#e9ecef</Color>
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

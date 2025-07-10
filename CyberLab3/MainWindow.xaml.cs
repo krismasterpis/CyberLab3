@@ -18,9 +18,12 @@ namespace CyberLab3
     /// </summary>
     public partial class MainWindow : Window
     {
+        public TimerViewModel Timer { get; } = new TimerViewModel();
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = Timer;
+
             sideBar.SelectedIndex = 0;
         }
 
