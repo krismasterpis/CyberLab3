@@ -2,24 +2,134 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:local="clr-namespace:CyberLab3.Pages"
+      xmlns:controls="clr-namespace:CyberLab3.Resources.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="OsaPage">
+      d:DesignHeight="900" d:DesignWidth="1400"
+      Title="OsaPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=".3*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition/>
+            <RowDefinition Height=".1*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height=".1*"/>
         </Grid.RowDefinitions>
-        <Grid Background="{StaticResource TopBarBrush}">
-            <StackPanel Margin="10,0,10,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button Content="Test" FontSize="16" Padding="10,3,10,3"/>
-            </StackPanel>
-        </Grid>
+        <Border Grid.Row="0" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Center" Padding="20,10,20,10">
+            <TextBlock x:Name="DeviceTextBlock" Text="Not connected" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+        </Border>
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical">
+            <Border Grid.Row="1" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
+                <StackPanel Orientation="Vertical">
+                    <Button x:Name="ConnectButton" Content="Connect" Click="Button_Click" IsEnabled="{Binding IsValidIp}"/>
+                    <UniformGrid Columns="2">
+                        <Label Content="IpAddress" HorizontalAlignment="Center"/>
+                        <TextBox x:Name="ipAddressTextBox" Text="{Binding IpAddress}" TextAlignment="Center" Margin="0,5,0,0" TextChanged="ipAddressTextBox_TextChanged"/>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,0,5" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <StackPanel Margin="10" Background="Transparent">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type Button}">
+                                    <Setter Property="FontSize" Value="20"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <controls:OsaTraceControl x:Name="OTCA" Foreground="{StaticResource LabelBrush}" Text="Trace A" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCB" Foreground="{StaticResource LabelBrush}" Text="Trace B" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCC" Foreground="{StaticResource LabelBrush}" Text="Trace C" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCD" Foreground="{StaticResource LabelBrush}" Text="Trace D" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCE" Foreground="{StaticResource LabelBrush}" Text="Trace E" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCF" Foreground="{StaticResource LabelBrush}" Text="Trace F" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCG" Foreground="{StaticResource LabelBrush}" Text="Trace G" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCH" Foreground="{StaticResource LabelBrush}" Text="Trace H" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCI" Foreground="{StaticResource LabelBrush}" Text="Trace I" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                            <controls:OsaTraceControl x:Name="OTCJ" Foreground="{StaticResource LabelBrush}" Text="Trace J" SelectionChanged="OsaTraceControl_SelectionChanged"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Row="0" Grid.Column="1" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Trace A" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold"  Foreground="{StaticResource LabelBrush}"/>
+                            <ListBox Background="Transparent" BorderThickness="0">
+                                <ListBoxItem Content="Test"/>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Border Grid.Row="1" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
+                    <StackPanel Orientation="Vertical">
+                        <UniformGrid Columns="2">
+                            <Button x:Name="SingleButton" Content="Single" Margin="0,0,5,0" Click="SingleButton_Click"/>
+                            <Button Content="Repeat" Margin="5,0,0,0"/>
+                        </UniformGrid>
+                        <UniformGrid Columns="2">
+                            <TextBlock Text="Interval (ms)" Margin="0,5,5,0" HorizontalAlignment="Right"/>
+                            <TextBox Margin="5,5,0,0"/>
+                        </UniformGrid>
+                        <Button Content="Clear all" Margin="0,5,0,0"/>
+                        <Button Content="Save all" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Row="2" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
+                    <StackPanel Orientation="Vertical">
+                        <Button Content="Add to CLab measurement"/>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="Interval" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
+                            <TextBox Text="Number of seconds"/>
+                        </UniformGrid>
+                        <Border CornerRadius="16" Background="{StaticResource DarkBackgroundBrush2}" Margin="0,5,0,0" Padding="10,5,10,10">
+                            <StackPanel Orientation="Vertical">
+                                <RadioButton Content="Single trace measurement" Margin="0,5,0,0"/>
+                                <ComboBox Margin="0,5,0,0" IsEnabled="False"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <GroupBox Grid.Row="3" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5">
+                    <GroupBox.Header>
+                        <Label Content="Markers" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <CheckBox Content="Add X marker A" VerticalContentAlignment="Center" FontSize="14" HorizontalAlignment="Center"/>
+                            <CheckBox Content="Add X marker B" VerticalContentAlignment="Center" FontSize="14" HorizontalAlignment="Center"/>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <CheckBox Content="Add Y marker A" VerticalContentAlignment="Center" FontSize="14" HorizontalAlignment="Center"/>
+                            <CheckBox Content="Add Y marker B" VerticalContentAlignment="Center" FontSize="14" HorizontalAlignment="Center"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </StackPanel>
+        <Border Grid.Column="1" Grid.Row="1" Margin="10" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}">
+            <ContentControl Content="{Binding OSAplot, Mode=OneTime}" Margin="10"/>
+        </Border>
     </Grid>
 </Page>

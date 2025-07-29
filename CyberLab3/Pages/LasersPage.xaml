@@ -7,21 +7,15 @@
       xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
       mc:Ignorable="d" 
       d:DesignHeight="1064" d:DesignWidth="1870"
-      Title="LasersPage">
+      Title="LasersPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <wv2:WebView2 x:Name="webView" Grid.Row="1" Grid.Column="0" Source="http://172.16.2.131/2150" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-        <Grid Grid.Row="0" Grid.Column="0" Background="{StaticResource TopBarBrush}">
-            <StackPanel Margin="10,0,10,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button Content="Test" FontSize="16" Padding="10,3,10,3"/>
-            </StackPanel>
-        </Grid>
     </Grid>
 </Page>

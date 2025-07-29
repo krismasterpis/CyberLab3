@@ -14,6 +14,10 @@
             <SolidColorBrush x:Key="TopBarBrush" Color="{StaticResource TopBarColor}" />
             <Color x:Key="BackgroundColor">#e9ecef</Color>
             <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+            <Color x:Key="DarkBackgroundColor">#d3d9df</Color>
+            <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{StaticResource DarkBackgroundColor}" />
+            <Color x:Key="DarkBackgroundColor2">#b5bfc9</Color>
+            <SolidColorBrush x:Key="DarkBackgroundBrush2" Color="{StaticResource DarkBackgroundColor2}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

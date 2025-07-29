@@ -68,4 +68,34 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="{x:Type controls:IconTile}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:IconTile}">
+                    <Border x:Name="back" CornerRadius="8" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                        <Path x:Name="icon" Width="{TemplateBinding IconWidth}" Height="{TemplateBinding IconHeight}" Data="{TemplateBinding Icon}" Stretch="Uniform" Fill="{TemplateBinding FillColor}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type controls:OsaTraceControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:OsaTraceControl}">
+                    <UniformGrid Columns="2" HorizontalAlignment="Center">
+                        <Button Content="{TemplateBinding Text}" FontSize="16" FontWeight="Bold" Foreground="{TemplateBinding Foreground}"/>
+                        <ComboBox x:Name="OsaTraceControl_ComboBox" Margin="10,0,0,0" Width="60" SelectedIndex="0">
+                            <ComboBoxItem Content="Blank"/>
+                            <ComboBoxItem Content="Write"/>
+                            <ComboBoxItem Content="Fix"/>
+                            <ComboBoxItem Content="Calculate"/>
+                        </ComboBox>
+                    </UniformGrid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

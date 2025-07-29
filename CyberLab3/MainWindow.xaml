@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:CyberLab3"
         xmlns:controls="clr-namespace:CyberLab3.Resources.Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1080" Width="1920">
+        Title="MainWindow" Height="1080" Width="1920" MinWidth="1500" MinHeight="1000" WindowState="Maximized">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="50"/>
@@ -30,6 +30,9 @@
         <Frame Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" x:Name="navFrame" NavigationUIVisibility="Hidden" Background="#e9ecef"/>
         <Grid Grid.Row="0" Grid.Column="1" Background="{StaticResource TopBarBrush}">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
+                <Border Height="40" Background="#e9ecef" CornerRadius="20" BorderThickness="0" Padding="20,0,20,0" Margin="0,0,10,0" Visibility="{Binding isCounterEnabled}">
+                    <TextBlock Text="{Binding estTimeStr}" FontSize="28" FontWeight="Bold" Margin="10,0,10,3" VerticalAlignment="Center" Foreground="#2a84f1"/>
+                </Border>
                 <controls:MeasurementTimer Time="{Binding Time}" StartCommand="{Binding StartTimerCommand}" PauseCommand="{Binding PauseTimerCommand}" RestartCommand="{Binding RestartTimerCommand}"/>
             </StackPanel>
         </Grid>
