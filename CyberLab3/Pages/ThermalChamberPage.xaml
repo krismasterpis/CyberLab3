@@ -6,26 +6,55 @@
       xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:local="clr-namespace:CyberLab3.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="900" d:DesignWidth="1400"
       Title="ThermalChamberPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width=".75*"/>
+            <ColumnDefinition Width=".25*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width=".3*"/>
-            </Grid.ColumnDefinitions>
-            <ScottPlot:WpfPlot Grid.Column="0" Padding="5"/>
-            <UniformGrid Grid.Column="1" Rows="2">
-                <ScottPlot:WpfPlot Padding="5"/>
-            </UniformGrid>
+        <Border Grid.Column="0" Grid.Row="0" Margin="5" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}">
+            <ContentControl Content="{Binding MainPlot, Mode=OneTime}" Margin="5"/>
+        </Border>
+        <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height=".35*"/>
+                <RowDefinition Height=".65*"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Margin="5" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}">
+                <ContentControl Content="{Binding SetPointsPlot, Mode=OneTime}" Margin="5"/>
+            </Border>
+            <StackPanel Grid.Row="1">
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                    <GroupBox.Header>
+                        <Label Content="Connection" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <Button x:Name="ConnectButt" Content="Connect"/>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="Ip address" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                            <TextBox/>
+                        </UniformGrid>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                    <GroupBox.Header>
+                        <Label Content="Measurements" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <TextBlock Text="Status"/>
+                        <TextBlock Text="Current Temperature" Margin="0,5,0,0"/>
+                        <TextBlock Text="Setpoint Temperature" Margin="0,5,0,0"/>
+                        <TextBlock Text="Next Setpoint Temperature" Margin="0,5,0,0"/>
+                        <Button Content="Define Setpoints" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>

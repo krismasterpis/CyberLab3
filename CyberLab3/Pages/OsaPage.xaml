@@ -20,6 +20,20 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height=".1*"/>
         </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <GroupBox Grid.Row="3" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}">
+                <GroupBox.Header>
+                    <Label Content="Previous measurement duration" FontSize="16" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <TextBlock x:Name="ElapsedTimeTextBlock" Text="{Binding ElapsedMs, StringFormat=Duration: \{0\} ms}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+            </GroupBox> 
+            <Border CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="10">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding LocalTimer.Time, StringFormat=Measurement \in: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                    <TextBlock Text="{Binding LocalMeasNum, StringFormat=Measurement \no: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
         <Border Grid.Row="0" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Center" Padding="20,10,20,10">
             <TextBlock x:Name="DeviceTextBlock" Text="Not connected" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
         </Border>
@@ -86,11 +100,11 @@
                     <StackPanel Orientation="Vertical">
                         <UniformGrid Columns="2">
                             <Button x:Name="SingleButton" Content="Single" Margin="0,0,5,0" Click="SingleButton_Click"/>
-                            <Button Content="Repeat" Margin="5,0,0,0"/>
+                            <Button x:Name="RepeatButton" Content="Repeat" Margin="5,0,0,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
                         </UniformGrid>
                         <UniformGrid Columns="2">
-                            <TextBlock Text="Interval (ms)" Margin="0,5,5,0" HorizontalAlignment="Right"/>
-                            <TextBox Margin="5,5,0,0"/>
+                            <TextBlock Text="{Binding LimitStr, StringFormat=Interval (s)&gt;\{0\}}" Margin="0,5,5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="IntervalTextBox" Margin="5,5,0,0" PreviewTextInput="IntervalTextBox_PreviewTextInput"/>
                         </UniformGrid>
                         <Button Content="Clear all" Margin="0,5,0,0"/>
                         <Button Content="Save all" Margin="0,5,0,0"/>

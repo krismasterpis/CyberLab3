@@ -20,9 +20,12 @@ namespace CyberLab3.Pages
     /// </summary>
     public partial class LasersPage : Page
     {
-        public LasersPage()
+        LasersPageViewModel LPVM;
+        public LasersPage(LasersPageViewModel _VM)
         {
             InitializeComponent();
+            LPVM = _VM;
+            DataContext = LPVM;
         }
     }
 }

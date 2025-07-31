@@ -20,9 +20,12 @@ namespace CyberLab3.Pages
     /// </summary>
     public partial class AttenuationPage : Page
     {
-        public AttenuationPage()
+        AttenuationPageViewModel APVM;
+        public AttenuationPage(AttenuationPageViewModel _VM)
         {
             InitializeComponent();
+            APVM = _VM;
+            DataContext = APVM;
         }
     }
 }

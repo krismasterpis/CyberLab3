@@ -20,9 +20,12 @@ namespace CyberLab3.Pages
     /// </summary>
     public partial class ThermalChamberPage : Page
     {
-        public ThermalChamberPage()
+        ThermalChamberViewModel TCVM;
+        public ThermalChamberPage(ThermalChamberViewModel _VM)
         {
             InitializeComponent();
+            TCVM = _VM;
+            DataContext = TCVM;
         }
     }
 }

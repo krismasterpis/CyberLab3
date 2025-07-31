@@ -258,4 +258,33 @@ namespace CyberLab3.Resources.Libraries
         public const string LIGHT_OUTPUT = "OPT";
         public const string LIGHT_OUTPUT_QUERY = "OPT?";
     }
+
+    public static class AnritsuMs9740ATimeConsts
+    {
+        public static readonly Dictionary<int, double> VBWcoeff = new Dictionary<int, double>
+        {
+            { 10, 32.0 },
+            { 100, 3.5 },
+            { 200, 2.0 },
+            { 1000, 0.5 },
+            { 2000, 0.3 },
+            { 10000, 0.2 },
+            { 100000, 0.2 },
+            { 1000000, 0.2 }
+        };
+
+        public static readonly Dictionary<int, double> SamplingPointsCoeff = new Dictionary<int, double>
+        {
+            { 51, 0.1 },
+            { 101, 0.2 },
+            { 251, 0.5},
+            { 501, 1 },
+            { 1001, 2 },
+            { 2001, 4 },
+            { 5001, 10 },
+            { 10001, 20 },
+            { 20001, 40 },
+            { 50001, 100 }
+        };
+    }
 }

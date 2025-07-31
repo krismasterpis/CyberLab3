@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,16 +29,21 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CyberLab3.Pages
 {
     /// <summary>
     /// Logika interakcji dla klasy OsaPage.xaml
     /// </summary>
+    /// 
     public partial class OsaPage : Page
     {
+        private static readonly Regex rgx = new Regex("[0-9]+");
+        private Stopwatch stopWatch = new Stopwatch();
         OSA osa = new OSA();
-        OsaPageViewModel OsaPVM = new OsaPageViewModel();
+        OsaPageViewModel OPVM;
         List<Measurement> measurements = new List<Measurement>();
         Dictionary<string, Scatter> scatters = new Dictionary<string, Scatter>();
         Dictionary<string, List<double>> scattersXs = new Dictionary<string, List<double>>();
@@ -47,24 +53,25 @@ namespace CyberLab3.Pages
         Measurement currentMeasure;
         Measurement prevMeasure;
         ScottPlot.AxisRules.MaximumBoundary normalRule;
-        public OsaPage()
+        public OsaPage(OsaPageViewModel _VM)
         {
             InitializeComponent();
-            DataContext = OsaPVM;
-            OsaPVM.OSAplot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
+            OPVM = _VM;
+            DataContext = OPVM;
+            OPVM.OSAplot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
             PixelPadding padding = new PixelPadding(75, 35, 75, 35);
-            OsaPVM.OSAplot.Plot.Layout.Fixed(padding);
-            OsaPVM.OSAplot.Plot.Axes.Left.Label.Text = "Vertical Axis";
-            OsaPVM.OSAplot.Plot.Axes.Left.Label.FontSize = 20;
-            OsaPVM.OSAplot.Plot.Axes.Left.TickLabelStyle.FontSize = 16;
-            OsaPVM.OSAplot.Plot.Axes.Bottom.Label.Text = "Horizontal Axis";
-            OsaPVM.OSAplot.Plot.Axes.Bottom.Label.FontSize = 20;
-            OsaPVM.OSAplot.Plot.Axes.Bottom.TickLabelStyle.FontSize = 16;
-            normalRule = new(xAxis: OsaPVM.OSAplot.Plot.Axes.Bottom,
-                                                           yAxis: OsaPVM.OSAplot.Plot.Axes.Left,
+            OPVM.OSAplot.Plot.Layout.Fixed(padding);
+            OPVM.OSAplot.Plot.Axes.Left.Label.Text = "Vertical Axis";
+            OPVM.OSAplot.Plot.Axes.Left.Label.FontSize = 20;
+            OPVM.OSAplot.Plot.Axes.Left.TickLabelStyle.FontSize = 16;
+            OPVM.OSAplot.Plot.Axes.Bottom.Label.Text = "Horizontal Axis";
+            OPVM.OSAplot.Plot.Axes.Bottom.Label.FontSize = 20;
+            OPVM.OSAplot.Plot.Axes.Bottom.TickLabelStyle.FontSize = 16;
+            normalRule = new(xAxis: OPVM.OSAplot.Plot.Axes.Bottom,
+                                                           yAxis: OPVM.OSAplot.Plot.Axes.Left,
                                                            new ScottPlot.AxisLimits(OSA.WAVELENGTH_RANGE_MIN_nm, OSA.WAVELENGTH_RANGE_MAX_nm, OSA.RECEIVER_SENSITIVITY_dBm, OSA.MAX_OPTICAL_INPUT_LEVEL_dBm));
-            OsaPVM.OSAplot.Plot.Axes.Rules.Clear();
-            OsaPVM.OSAplot.Plot.Axes.Rules.Add(normalRule);
+            OPVM.OSAplot.Plot.Axes.Rules.Clear();
+            OPVM.OSAplot.Plot.Axes.Rules.Add(normalRule);
             currentMeasure = new Measurement();
             for (int i = 0; i < 10; i++)
             {
@@ -72,21 +79,21 @@ namespace CyberLab3.Pages
                 tracesTypes.Add(name, TraceType.Blank);
                 scattersXs.Add(name,new List<double>());
                 scattersYs.Add(name,new List<double>());
-                var scatter = OsaPVM.OSAplot.Plot.Add.Scatter(scattersXs[name], scattersYs[name]);
+                var scatter = OPVM.OSAplot.Plot.Add.Scatter(scattersXs[name], scattersYs[name]);
                 scatter.Color = ScottPlot.Color.FromColor(pallette[i]);
                 scatter.LegendText = name;
                 scatter.IsVisible = false;
                 scatters.Add(name, scatter);
             }
-            OsaPVM.OSAplot.Refresh();
-            OsaPVM.IpAddress = "172.16.2.80";
+            OPVM.OSAplot.Refresh();
+            OPVM.IpAddress = "172.16.2.80";
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             await Task.Run(() =>
             {
-                osa.Connect($"TCPIP0::{OsaPVM.IpAddress.Trim()}::inst0::INSTR");
+                osa.Connect($"TCPIP0::{OPVM.IpAddress.Trim()}::inst0::INSTR");
 
                 if (osa.IsConnected)
                 {
@@ -95,6 +102,7 @@ namespace CyberLab3.Pages
                 }
             });
             DeviceTextBlock.Text = osa.identity;
+            OPVM.LimitStr = $">{AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT]}";
         }
 
         private void ipAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -129,6 +137,7 @@ namespace CyberLab3.Pages
 
         private async void SingleButton_Click(object sender, RoutedEventArgs e)
         {
+            stopWatch.Restart();
             prevMeasure = currentMeasure; // do przerobienia na prevMeasure = new Measurement(currentMeasure);
             await Task.Run(() =>
             {
@@ -141,8 +150,12 @@ namespace CyberLab3.Pages
                 scattersYs[trace.name].Clear();
                 scattersYs[trace.name].AddRange(trace.attenuationsRaw);
             }
-            OsaPVM.OSAplot.Refresh();
-            OsaPVM.OSAplot.Plot.Axes.AutoScale();
+            OPVM.OSAplot.Refresh();
+            OPVM.OSAplot.Plot.Axes.AutoScale();
+            stopWatch.Stop();
+            OPVM.ElapsedMs = stopWatch.ElapsedMilliseconds;
+            if (OPVM.LocalTimer != null) ElapsedTimeTextBlock.Foreground = OPVM.ElapsedMs < OPVM.LocalTimer.Interval*1000 ? Brushes.Green : Brushes.Red;
+            else ElapsedTimeTextBlock.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromArgb(255,42, 132, 241));
         }
 
         private void OsaTraceControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -198,16 +211,73 @@ namespace CyberLab3.Pages
             }
             if(tracesTypes.Values.Contains(TraceType.Calculate))
             {
-                OsaPVM.OSAplot.Plot.Axes.Rules.Clear();
-                OsaPVM.OSAplot.Refresh();
+                OPVM.OSAplot.Plot.Axes.Rules.Clear();
+                OPVM.OSAplot.Refresh();
             }
             else
             {
-                OsaPVM.OSAplot.Plot.Axes.Rules.Clear();
-                OsaPVM.OSAplot.Plot.Axes.Rules.Add(normalRule);
-                OsaPVM.OSAplot.Refresh();
-                OsaPVM.OSAplot.Plot.Axes.AutoScale();
+                OPVM.OSAplot.Plot.Axes.Rules.Clear();
+                OPVM.OSAplot.Plot.Axes.Rules.Add(normalRule);
+                OPVM.OSAplot.Refresh();
+                OPVM.OSAplot.Plot.Axes.AutoScale();
             }
+        }
+
+        private void RepeatButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(!IntervalTextBox.IsEnabled)
+            {
+                OPVM.LocalTimer.Stop();
+                IntervalTextBox.IsEnabled = true;
+            }
+            else
+            {
+                var interv = long.Parse(IntervalTextBox.Text);
+                var limit = AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT];
+                if (interv > 0 && interv > limit)
+                {
+                    OPVM.LocalTimer = new LocalTimer(interv, LocalTimerElapsed);
+                    OPVM.LocalTimer.Reset();
+                    OPVM.LocalTimer.Start();
+                    IntervalTextBox.IsEnabled = false;
+                }
+                else
+                {
+                    IntervalTextBox.Text = null;
+                }
+            }
+        }
+
+        private async void LocalTimerElapsed(object? sender, EventArgs e)
+        {
+            if(OPVM.LocalTimer != null)
+            {
+                stopWatch.Restart();
+                prevMeasure = currentMeasure;
+                await Task.Run(() =>
+                {
+                    osa.ReadSingle(currentMeasure, tracesTypes);
+                });
+                foreach (var trace in currentMeasure.traces.Values)
+                {
+                    scattersXs[trace.name].Clear();
+                    scattersXs[trace.name].AddRange(trace.wavelengths);
+                    scattersYs[trace.name].Clear();
+                    scattersYs[trace.name].AddRange(trace.attenuationsRaw);
+                }
+                OPVM.OSAplot.Refresh();
+                OPVM.OSAplot.Plot.Axes.AutoScale();
+                stopWatch.Stop();
+                OPVM.ElapsedMs = stopWatch.ElapsedMilliseconds;
+                ElapsedTimeTextBlock.Foreground = OPVM.ElapsedMs < OPVM.LocalTimer.Interval*1000 ? Brushes.Green : Brushes.Red;
+                OPVM.LocalMeasNum += 1;
+            }
+        }
+
+        private void IntervalTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            var result = !rgx.IsMatch(e.Text);
+            e.Handled = result;
         }
     }
 }

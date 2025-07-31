@@ -20,9 +20,12 @@ namespace CyberLab3.Pages
     /// </summary>
     public partial class InterrogatorPage : Page
     {
-        public InterrogatorPage()
+        InterrogatorPageViewModel IPVM;
+        public InterrogatorPage(InterrogatorPageViewModel _VM)
         {
             InitializeComponent();
+            IPVM = _VM;
+            DataContext = IPVM;
         }
     }
 }

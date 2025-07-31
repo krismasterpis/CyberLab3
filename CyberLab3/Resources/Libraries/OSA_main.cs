@@ -53,14 +53,14 @@ namespace CyberLab3.Resources.Libraries
 
         public enum VbwSetting
         {
-            VBW_10_Hz,
-            VBW_100_Hz,
-            VBW_200_Hz,
-            VBW_1_kHz,
-            VBW_2_kHz,
-            VBW_10_kHz,
-            VBW_100_kHz,
-            VBW_1_MHz
+            VBW_10_Hz = 10,
+            VBW_100_Hz = 100,
+            VBW_200_Hz = 200,
+            VBW_1_kHz = 1000,
+            VBW_2_kHz = 2000,
+            VBW_10_kHz = 10000,
+            VBW_100_kHz = 100000,
+            VBW_1_MHz = 1000000
         }
 
         public enum WavelengthDisplayUnit

@@ -21,20 +21,37 @@ namespace CyberLab3
     /// </summary>
     public partial class MainWindow : Window
     {
-        public TimerViewModel Timer { get; } = new TimerViewModel();
-        AttenuationPage attenuationPage = new AttenuationPage();
-        HomePage HomePage = new HomePage();
-        InterrogatorPage InterrogatorPage = new InterrogatorPage();
-        LasersPage LasersPage = new LasersPage();
-        OsaPage OsaPage = new OsaPage();
-        SwitchPage SwitchPage = new SwitchPage();
-        TemperaturePage TemperaturePage= new TemperaturePage();
-        ThermalChamberPage ThermalChamberPage = new ThermalChamberPage();
+        //ViewModels
+        AttenuationPageViewModel AttenuationPageVM = new AttenuationPageViewModel();
+        HomePageViewModel HomePageVM = new HomePageViewModel();
+        InterrogatorPageViewModel InterrogatorPageVM = new InterrogatorPageViewModel();
+        LasersPageViewModel LasersPageVM = new LasersPageViewModel();
+        OsaPageViewModel OsaPageVM = new OsaPageViewModel();
+        SwitchPageViewModel SwitchPageVM = new SwitchPageViewModel();
+        TemperaturePageViewModel TemperaturePageVM = new TemperaturePageViewModel();
+        ThermalChamberViewModel ThermalChamberPageVM = new ThermalChamberViewModel();
+        //Strony
+        AttenuationPage attenuationPage_;
+        HomePage HomePage_;
+        InterrogatorPage InterrogatorPage_;
+        LasersPage LasersPage_;
+        OsaPage OsaPage_;
+        SwitchPage SwitchPage_;
+        TemperaturePage TemperaturePage_;
+        ThermalChamberPage ThermalChamberPage_;
+        public TimerViewModel TimerVM { get; } = new TimerViewModel();
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = Timer;
-            //Timer.estTime = new TimeSpan(10, 0, 0);
+            DataContext = TimerVM;
+            attenuationPage_ = new AttenuationPage(AttenuationPageVM);
+            HomePage_ = new HomePage(HomePageVM);
+            InterrogatorPage_ = new InterrogatorPage(InterrogatorPageVM);
+            LasersPage_ = new LasersPage(LasersPageVM);
+            OsaPage_ = new OsaPage(OsaPageVM);
+            SwitchPage_ = new SwitchPage(SwitchPageVM);
+            TemperaturePage_ = new TemperaturePage(TemperaturePageVM);
+            ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM);
             sideBar.SelectedIndex = 0;
         }
 
@@ -46,28 +63,28 @@ namespace CyberLab3
                 switch(selected.NavName)
                 {
                     case "Home":
-                        navFrame.Navigate(HomePage);
+                        navFrame.Navigate(HomePage_);
                         break;
                     case "OSA":
-                        navFrame.Navigate(OsaPage);
+                        navFrame.Navigate(OsaPage_);
                         break;
                     case "Thermal Cahmber":
-                        navFrame.Navigate(ThermalChamberPage);
+                        navFrame.Navigate(ThermalChamberPage_);
                         break;
                     case "Temperature Meas.":
-                        navFrame.Navigate(TemperaturePage);
+                        navFrame.Navigate(TemperaturePage_);
                         break;
                     case "Lasers":
-                        navFrame.Navigate(LasersPage);
+                        navFrame.Navigate(LasersPage_);
                         break;
                     case "Switch":
-                        navFrame.Navigate(SwitchPage);
+                        navFrame.Navigate(SwitchPage_);
                         break;
                     case "Interrogator":
-                        navFrame.Navigate(InterrogatorPage);
+                        navFrame.Navigate(InterrogatorPage_);
                         break;
                     case "Attenuation Meas.":
-                        navFrame.Navigate(attenuationPage);
+                        navFrame.Navigate(attenuationPage_);
                         break;
                 }
                 //navFrame.Navigate(selected.NavLink);

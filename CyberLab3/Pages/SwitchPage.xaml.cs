@@ -20,9 +20,12 @@ namespace CyberLab3.Pages
     /// </summary>
     public partial class SwitchPage : Page
     {
-        public SwitchPage()
+        SwitchPageViewModel SPVM;
+        public SwitchPage(SwitchPageViewModel _VM)
         {
             InitializeComponent();
+            SPVM = _VM;
+            DataContext = SPVM;
         }
     }
 }

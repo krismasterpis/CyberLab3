@@ -20,9 +20,12 @@ namespace CyberLab3.Pages
     /// </summary>
     public partial class HomePage : Page
     {
-        public HomePage()
+        HomePageViewModel HPVM;
+        public HomePage(HomePageViewModel _VM)
         {
             InitializeComponent();
+            HPVM = _VM;
+            DataContext = HPVM;
         }
     }
 }
