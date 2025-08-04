@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:CyberLab3.Pages"
       xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
       mc:Ignorable="d" 
-      d:DesignHeight="1064" d:DesignWidth="1870"
+      d:DesignHeight="1079" d:DesignWidth="1870"
       Title="LasersPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">

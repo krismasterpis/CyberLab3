@@ -7,7 +7,7 @@
       xmlns:local="clr-namespace:CyberLab3.Pages"
       xmlns:controls="clr-namespace:CyberLab3.Resources.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="900" d:DesignWidth="1400"
+      d:DesignHeight="1079" d:DesignWidth="1870"
       Title="OsaPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">
@@ -107,7 +107,7 @@
                             <TextBox x:Name="IntervalTextBox" Margin="5,5,0,0" PreviewTextInput="IntervalTextBox_PreviewTextInput"/>
                         </UniformGrid>
                         <Button Content="Clear all" Margin="0,5,0,0"/>
-                        <Button Content="Save all" Margin="0,5,0,0"/>
+                        <Button x:Name="saveButton" Content="Save all" Margin="0,5,0,0" Click="saveButton_Click"/>
                     </StackPanel>
                 </Border>
                 <Border Grid.Row="2" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">

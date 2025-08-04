@@ -1,5 +1,7 @@
 ﻿using CyberLab3.Pages;
 using CyberLab3.Resources.Controls;
+using SqliteWpfApp;
+using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Globalization;
@@ -39,16 +41,18 @@ namespace CyberLab3
         SwitchPage SwitchPage_;
         TemperaturePage TemperaturePage_;
         ThermalChamberPage ThermalChamberPage_;
+        public DatabaseContext db = new DatabaseContext();
         public TimerViewModel TimerVM { get; } = new TimerViewModel();
         public MainWindow()
         {
             InitializeComponent();
+            db.Database.EnsureCreated(); // Tworzy bazę danych, jeśli nie istnieje
             DataContext = TimerVM;
             attenuationPage_ = new AttenuationPage(AttenuationPageVM);
             HomePage_ = new HomePage(HomePageVM);
             InterrogatorPage_ = new InterrogatorPage(InterrogatorPageVM);
             LasersPage_ = new LasersPage(LasersPageVM);
-            OsaPage_ = new OsaPage(OsaPageVM);
+            OsaPage_ = new OsaPage(OsaPageVM, db);
             SwitchPage_ = new SwitchPage(SwitchPageVM);
             TemperaturePage_ = new TemperaturePage(TemperaturePageVM);
             ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM);

@@ -9,14 +9,14 @@ namespace CyberLab3.Resources.Libraries
 {
     public class Trace
     {
-        public List<double> wavelengths;
-        public List<double> attenuationsRaw;
-        public List<double> attenuationsSmooth;
-        public string name;
-        public TraceType type = TraceType.Blank;
-        public char calculateTrace1;
-        public char calculateTrace2;
-        public char calculateSign;
+        public Trace()
+        {
+            wavelengths = new List<double>();
+            attenuationsRaw = new List<double>();
+            attenuationsSmooth = new List<double>();
+            name = string.Empty;
+        }
+
         public Trace(string _name)
         {
             name = _name;
@@ -24,6 +24,15 @@ namespace CyberLab3.Resources.Libraries
             attenuationsRaw = new List<double>();
             attenuationsSmooth = new List<double>();
         }
+
+        public List<double> wavelengths { get; set; }
+        public List<double> attenuationsRaw { get; set; }
+        public List<double> attenuationsSmooth { get; set; }
+        public string name { get; set; }
+        public TraceType type { get; set; } = TraceType.Blank;
+        public char calculateTrace1 { get; set; }
+        public char calculateTrace2 { get; set; }
+        public char calculateSign { get; set; }
 
         public void SetData(List<double> _wavelengths, List<double> _attenuationRaw)
         {
@@ -39,7 +48,6 @@ namespace CyberLab3.Resources.Libraries
             attenuationsSmooth.Clear();
         }
     }
-
     public enum TraceType
     {
         Blank,

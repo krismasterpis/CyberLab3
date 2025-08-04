@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:CyberLab3.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="900" d:DesignWidth="1400"
+      d:DesignHeight="1079" d:DesignWidth="1870"
       Title="TemperaturePage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">

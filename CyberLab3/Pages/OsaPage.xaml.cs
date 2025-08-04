@@ -9,6 +9,7 @@ using ScottPlot;
 using ScottPlot.Plottables;
 using ScpiNet;
 using SkiaSharp;
+using SqliteWpfApp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -53,9 +54,12 @@ namespace CyberLab3.Pages
         Measurement currentMeasure;
         Measurement prevMeasure;
         ScottPlot.AxisRules.MaximumBoundary normalRule;
-        public OsaPage(OsaPageViewModel _VM)
+        public OsaPage(OsaPageViewModel _VM, DatabaseContext db)
         {
             InitializeComponent();
+            var latest = db.Measurements
+                                .OrderByDescending(m => m.Time)
+                                .FirstOrDefault();
             OPVM = _VM;
             DataContext = OPVM;
             OPVM.OSAplot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
@@ -102,7 +106,7 @@ namespace CyberLab3.Pages
                 }
             });
             DeviceTextBlock.Text = osa.identity;
-            OPVM.LimitStr = $">{AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT]}";
+            //OPVM.LimitStr = $">{AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT]}";
         }
 
         private void ipAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -278,6 +282,19 @@ namespace CyberLab3.Pages
         {
             var result = !rgx.IsMatch(e.Text);
             e.Handled = result;
+        }
+
+        private void saveButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var context = new DatabaseContext())
+            {
+                var latest = context.Measurements
+                    .OrderByDescending(m => m.Id)
+                    .FirstOrDefault();
+                if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
+                context.Measurements.Add(currentMeasure);
+                context.SaveChanges();
+            }
         }
     }
 }

@@ -539,7 +539,7 @@ namespace CyberLab3.Resources.Libraries
                             }
                             string[] temp = result.Split(',');
                             List<double> Ys = new List<double>();
-                            for (int i = 0; i < temp.Length; i++)
+                            for (int i = 0; i < temp.Length-1; i++)
                             {
                                 double.TryParse(temp[i], CultureInfo.InvariantCulture, out var value);
                                 Ys.Add(value);

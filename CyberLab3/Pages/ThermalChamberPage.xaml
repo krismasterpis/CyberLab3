@@ -6,7 +6,7 @@
       xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:local="clr-namespace:CyberLab3.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="900" d:DesignWidth="1400"
+      d:DesignHeight="1079" d:DesignWidth="1870"
       Title="ThermalChamberPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">
@@ -35,7 +35,7 @@
                         <Label Content="Connection" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
                     </GroupBox.Header>
                     <StackPanel>
-                        <Button x:Name="ConnectButt" Content="Connect"/>
+                        <Button x:Name="ConnectButt" Content="Connect" Click="ConnectButt_Click"/>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
                             <TextBlock Text="Ip address" HorizontalAlignment="Right" Margin="0,0,5,0"/>
                             <TextBox/>
@@ -51,7 +51,11 @@
                         <TextBlock Text="Current Temperature" Margin="0,5,0,0"/>
                         <TextBlock Text="Setpoint Temperature" Margin="0,5,0,0"/>
                         <TextBlock Text="Next Setpoint Temperature" Margin="0,5,0,0"/>
-                        <Button Content="Define Setpoints" Margin="0,5,0,0"/>
+                        <Button x:Name="DefineSetpointButt" Content="Define Setpoints" Margin="0,5,0,0" Click="DefineSetpointButt_Click"/>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="Interval (s) " HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                            <TextBox/>
+                        </UniformGrid>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>

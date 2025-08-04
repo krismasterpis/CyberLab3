@@ -1,4 +1,4 @@
-﻿<Page x:Class="CyberLab3.Pages.SwitchPage"
+﻿<Page x:Class="CyberLab3.Pages.CyberLabPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:CyberLab3.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="1079" d:DesignWidth="1870"
-      Title="SwitchPage" KeepAlive="True">
+      Title="CyberLabPage" KeepAlive="True">
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>

@@ -8,7 +8,10 @@ namespace CyberLab3.Resources.Libraries
 {
     public class Measurement
     {
-        public Dictionary<string, Trace> traces = new Dictionary<string, Trace>();
+        public int Id { get; set; }
+        public DateTime Time { get; set; }
+        public double Temperature { get; set; }
+        public Dictionary<string, Trace> traces { get; set; } = new();
         public Measurement()
         {
             for(int i = 0; i < 10; i++)

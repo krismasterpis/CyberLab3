@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CyberLab3.Resources.Controls;
+using CyberLab3.Resources.HomeShorts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +28,23 @@ namespace CyberLab3.Pages
             InitializeComponent();
             HPVM = _VM;
             DataContext = HPVM;
+        }
+
+        private void IconTile_MouseMove(object sender, MouseEventArgs e)
+        {
+            if(e.LeftButton == MouseButtonState.Pressed)
+            {
+                IconTile tile = e.Source as IconTile;
+                DragDrop.DoDragDrop(tile, new DataObject(DataFormats.Serializable,tile), DragDropEffects.Move);
+            }
+        }
+
+        private void Border_Drop(object sender, DragEventArgs e)
+        {
+            object data = e.Data.GetData(DataFormats.Serializable);
+            Frame _frame = e.Source as Frame;
+            HomeShort Hshort = new HomeShort();
+            _frame.Navigate(Hshort);
         }
     }
 }
