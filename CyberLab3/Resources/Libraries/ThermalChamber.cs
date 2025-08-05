@@ -26,6 +26,8 @@ public class ThermalChamber : IDisposable
     private TcpClient _client;
     private NetworkStream _stream;
 
+    public bool IsConnected = false;
+
     public ThermalChamber(string host, int port = 10001, byte slaveId = 1)
     {
         _host = host;
@@ -42,6 +44,7 @@ public class ThermalChamber : IDisposable
             _client.Connect(_host, _port);
             _stream = _client.GetStream();
             _stream.ReadTimeout = 2000; // 2 sekundy na odpowiedź
+            IsConnected = true;
         }
         catch (Exception ex)
         {
@@ -256,6 +259,7 @@ public class ThermalChamber : IDisposable
     {
         if (modbusBytes.Length != 4) throw new ArgumentException("Tablica musi mieć 4 bajty.");
         byte[] csharpBytes = { modbusBytes[2], modbusBytes[3], modbusBytes[0], modbusBytes[1] };
+        Array.Reverse(csharpBytes);
         return BitConverter.ToSingle(csharpBytes, 0);
     }
     private byte[] ToModbusFloat(float value)
