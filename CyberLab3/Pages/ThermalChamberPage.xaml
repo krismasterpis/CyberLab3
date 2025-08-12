@@ -21,6 +21,11 @@
         <StackPanel Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
             <Border  CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="10">
                 <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding LocalTimer2.Time, StringFormat=Next \setpoint \in: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                </StackPanel>
+            </Border>
+            <Border  CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="10">
+                <StackPanel Orientation="Vertical">
                     <TextBlock Text="{Binding MeasurementFails, StringFormat=Measurement \fails: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="Red"/>
                 </StackPanel>
             </Border>
@@ -52,24 +57,31 @@
                         <Button x:Name="ConnectButt" Content="Connect" Click="ConnectButt_Click"/>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
                             <TextBlock Text="Ip address" HorizontalAlignment="Right" Margin="0,0,5,0"/>
-                            <TextBox/>
+                            <TextBox x:Name="ipTextBox" TextChanged="ipTextBox_TextChanged"/>
                         </UniformGrid>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5" IsEnabled="{Binding IsConnected}">
                     <GroupBox.Header>
                         <Label Content="Measurements" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
                     </GroupBox.Header>
                     <StackPanel>
-                        <TextBlock Text="Status"/>
-                        <TextBlock Text="Current Temperature" Margin="0,5,0,0"/>
-                        <TextBlock Text="Setpoint Temperature" Margin="0,5,0,0"/>
-                        <TextBlock Text="Next Setpoint Temperature" Margin="0,5,0,0"/>
-                        <Button x:Name="DefineSetpointButt" Content="Define Setpoints" Margin="0,5,0,0" Click="DefineSetpointButt_Click"/>
-                        <Button x:Name="StartButt" Content="Start Measurement" Margin="0,5,0,0" Click="StartButt_Click" IsEnabled="{Binding IsIntervalSetted}"/>
-
+                        <TextBlock Text="{Binding ThermalChamberStatus, StringFormat=Status: {0}}"/>
+                        <TextBlock Text="{Binding CurrTemperature, StringFormat=Current \Temperature: {0:#.#}}" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding CurrSetPoint, StringFormat=Setpoint \Temperature: {0:#.#}}" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding NextSetPoint, StringFormat=Next \Setpoint \Temperature: {0:#.#}}" Margin="0,5,0,0"/>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
-                            <TextBlock Text="Interval (s) " HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                            <Button x:Name="SetButt" Content="   SET   " HorizontalAlignment="Right" Margin="0,0,5,0" Click="SetButt_Click"/>
+                            <TextBox x:Name="SetPointTextBox" TextChanged="SetPointTextBox_TextChanged"/>
+                        </UniformGrid>
+                        <Button x:Name="DefineSetpointButt" Content="Define Setpoints" Margin="0,5,0,0" Click="DefineSetpointButt_Click"/>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <Button x:Name="StartButt" Content="START" Margin="0,0,5,0" Click="StartButt_Click" IsEnabled="{Binding IsSetpointsSetted}"/>
+                            <TextBlock Text="Estimated time:" VerticalAlignment="Center"/>
+                        </UniformGrid>
+                        <Button x:Name="IntervalChangeButt" Content="Change Interval" Margin="0,5,0,0" Click="IntervalChangeButt_Click" IsEnabled="{Binding IsIntervalSetted}"/>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="{Binding Interval, StringFormat=Interval {0} (s)}" HorizontalAlignment="Right" Margin="0,0,5,0"/>
                             <TextBox x:Name="IntervalTextBox" IsEnabled="{Binding IsConnected}" TextChanged="IntervalTextBox_TextChanged"/>
                         </UniformGrid>
                     </StackPanel>

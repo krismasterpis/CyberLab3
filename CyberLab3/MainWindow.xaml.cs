@@ -5,6 +5,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,8 +22,20 @@ namespace CyberLab3
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    [FlagsAttribute]
+    public enum EXECUTION_STATE : uint
+    {
+        ES_AWAYMODE_REQUIRED = 0x00000040,
+        ES_CONTINUOUS = 0x80000000,
+        ES_DISPLAY_REQUIRED = 0x00000002,
+        ES_SYSTEM_REQUIRED = 0x00000001
+        // Legacy flag, should not be used.
+        // ES_USER_PRESENT = 0x00000004
+    }
     public partial class MainWindow : Window
     {
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
         //ViewModels
         AttenuationPageViewModel AttenuationPageVM = new AttenuationPageViewModel();
         HomePageViewModel HomePageVM = new HomePageViewModel();
@@ -46,6 +59,7 @@ namespace CyberLab3
         public MainWindow()
         {
             InitializeComponent();
+            PreventSleep();
             db.Database.EnsureCreated(); // Tworzy bazę danych, jeśli nie istnieje
             DataContext = TimerVM;
             attenuationPage_ = new AttenuationPage(AttenuationPageVM);
@@ -58,7 +72,11 @@ namespace CyberLab3
             ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM);
             sideBar.SelectedIndex = 0;
         }
-
+        void PreventSleep()
+        {
+            // Prevent Idle-to-Sleep (monitor not affected) (see note above)
+            SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_AWAYMODE_REQUIRED);
+        }
         private void sideBar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selected = sideBar.SelectedItem as NavButton;

@@ -98,9 +98,10 @@
                 </Grid>
                 <Border Grid.Row="1" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
                     <StackPanel Orientation="Vertical">
-                        <UniformGrid Columns="2">
+                        <UniformGrid Columns="3">
                             <Button x:Name="SingleButton" Content="Single" Margin="0,0,5,0" Click="SingleButton_Click"/>
-                            <Button x:Name="RepeatButton" Content="Repeat" Margin="5,0,0,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="RepeatButton" Content="Repeat" Margin="5,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="StopButton" Content="Stop" Margin="5,0,0,0" Click="StopButton_Click"  IsEnabled="{Binding IsRepeatEnabled}"/>
                         </UniformGrid>
                         <UniformGrid Columns="2">
                             <TextBlock Text="{Binding LimitStr, StringFormat=Interval (s)&gt;\{0\}}" Margin="0,5,5,0" HorizontalAlignment="Right"/>

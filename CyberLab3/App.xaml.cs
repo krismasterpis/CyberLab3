@@ -10,12 +10,8 @@ namespace CyberLab3
     /// </summary>
     public partial class App : Application
     {
-        //public TimerViewModel GlobalTimer { get; } = new TimerViewModel();
-        //Na wypadek jakby viewmodel nie działał
-        /*        public static DispatcherTimer timer = new DispatcherTimer()
-                {
-                    Interval = TimeSpan.FromSeconds(1)
-                };*/
+        public static bool isThermalChamberActive = false;
+        public static double globalTemperatureTC = -100;
     }
 
 }

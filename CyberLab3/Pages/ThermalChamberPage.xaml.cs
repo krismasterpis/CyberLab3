@@ -6,6 +6,7 @@ using ScottPlot.Plottables;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -34,6 +35,7 @@ namespace CyberLab3.Pages
         ThermalChamber TC;
         List<double> temperatureSetpointsY = new List<double>() { 0, 0, 0, 0, 0 };
         List<double> temperatureSetpointsX = new List<double>() { 1, 2, 3, 4, 5 };
+        List<SetPoint> temperatureSetpoints = new List<SetPoint>();
         List<float> temperatureX = new List<float>();
         List<float> temperatureY = new List<float>();
         List<int> elapsedMSList = new List<int>();
@@ -41,7 +43,9 @@ namespace CyberLab3.Pages
         private Scatter setpointsScatter;
         private Scatter temperatureScatter;
 
-        int localTimerInterval;
+        int currentSetPointIndex = 0;
+        int localSetPoint = -100;
+        int intResult;
         public ThermalChamberPage(ThermalChamberViewModel _VM)
         {
             InitializeComponent();
@@ -73,63 +77,85 @@ namespace CyberLab3.Pages
             temperatureScatter.MarkerStyle.Size = 10;
             TCVM.MainPlot.Refresh();
             TCVM.SetPointsPlot.Refresh();
+            TCVM.LocalTimer = new LocalTimer(TCVM.Interval, LocalTimerElapsed);
+            ipTextBox.Text = "172.16.2.217";
         }
-
-        private void ConnectButt_Click(object sender, RoutedEventArgs e)
+        private async void ConnectButt_Click(object sender, RoutedEventArgs e)
         {
-            TC = new ThermalChamber("172.16.2.217");
-            TC.Connect();
-            Debug.WriteLine(TC.ReadOperatingMode().ToString());
-            TCVM.IsConnected= TC.IsConnected;
-        }
-
-        private void DefineSetpointButt_Click(object sender, RoutedEventArgs e)
-        {
-            SetpointsPopup popup = new SetpointsPopup(temperatureSetpointsX, temperatureSetpointsY);
-            bool? result = popup.ShowDialog();
-            TCVM.SetPointsPlot.Plot.Axes.AutoScale();
-            TCVM.SetPointsPlot.Refresh();
-        }
-
-        private async void StartButt_Click(object sender, RoutedEventArgs e)
-        {
-            if (!TCVM.IsIntervalSetted)
+            if(TC == null || !TC.checkIfConnected())
             {
-                TCVM.LocalTimer.Stop();
-            }
-            else
-            {
-                var interv = long.Parse(IntervalTextBox.Text);
-                if (interv > 1)
+                if (IsStrictIPv4(ipTextBox.Text))
                 {
-                    TCVM.LocalTimer = new LocalTimer(interv, LocalTimerElapsed);
+                    TC = new ThermalChamber(ipTextBox.Text);
                     await Task.Run(() =>
                     {
                         var status = true;
-                        while (status)
+                        while(status)
                         {
                             try
                             {
-                                temperatureX.Add(temperatureY.Count() * localTimerInterval);
-                                temperatureY.Add(TC.ReadTemperature());
+                                TC.Connect();
+                                TC.SetOperatingMode(Mb1OperatingMode.Manual);
+                                TCVM.CurrSetPoint = TC.ReadSetPoint();
+                                TCVM.IsConnected = TC.IsConnected;
+                                TCVM.ThermalChamberStatus = Enum.GetName(TC.ReadOperatingMode());
                                 status = false;
                             }
-                            catch (Exception ex)
+                            catch(Exception ex)
                             {
                                 Debug.WriteLine(ex.Message);
                             }
                         }
+                        //TCVM.LocalTimer.Start();
                     });
-                    TCVM.MainPlot.Plot.Axes.AutoScale();
-                    TCVM.MainPlot.Refresh();
-                    TCVM.LocalTimer.Reset();
-                    TCVM.LocalTimer.Start();
-                }
-                else
-                {
-                    IntervalTextBox.Text = null;
                 }
             }
+        }
+        private bool IsStrictIPv4(string ip)
+        {
+            if (string.IsNullOrWhiteSpace(ip))
+                return false;
+
+            string[] parts = ip.Split('.');
+            if (parts.Length != 4)
+                return false;
+
+            foreach (var part in parts)
+            {
+                if (!int.TryParse(part, out int byteVal))
+                    return false;
+
+                if (byteVal < 0 || byteVal > 255)
+                    return false;
+            }
+
+            return true;
+        }
+        private void ReadTemperature()
+        {
+            var status = true;
+            while (status)
+            {
+                if (!TC.checkIfConnected())
+                {
+                    TC.Connect();
+                }
+                var temp = TC.ReadTemperature();
+                if (temperatureX.Count() == 0) temperatureX.Add(0);
+                else temperatureX.Add(temperatureX.Last() + TCVM.Interval);
+                temperatureY.Add(temp);
+                TCVM.CurrTemperature = temp;
+                App.isThermalChamberActive = true;
+                App.globalTemperatureTC = temp;
+                status = false;
+            }
+        }
+        private void DefineSetpointButt_Click(object sender, RoutedEventArgs e)
+        {
+            SetpointsPopup popup = new SetpointsPopup(temperatureSetpointsX, temperatureSetpointsY, TCVM, temperatureSetpoints);
+            bool? result = popup.ShowDialog();
+            TCVM.SetPointsPlot.Plot.Axes.AutoScale();
+            TCVM.SetPointsPlot.Refresh();
         }
         private async void LocalTimerElapsed(object? sender, EventArgs e)
         {
@@ -137,22 +163,15 @@ namespace CyberLab3.Pages
             {
                 await Task.Run(() =>
                 {
-                    var status = true;
                     sw.Restart();
-                    while (status)
+                    try
                     {
-                        try
-                        {
-                            var temp = TC.ReadTemperature();
-                            temperatureX.Add(temperatureY.Count() * localTimerInterval);
-                            temperatureY.Add(temp);
-                            status = false;
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                            TCVM.MeasurementFails += 1;
-                        }
+                        ReadTemperature(); 
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        TCVM.MeasurementFails += 1;
                     }
                     sw.Stop();
                     elapsedMSList.Add((int)sw.ElapsedMilliseconds);
@@ -163,24 +182,188 @@ namespace CyberLab3.Pages
                 TCVM.MainPlot.Refresh();
             }
         }
-
+        private async void LocalTimerElapsed2(object? sender, EventArgs e)
+        {
+            if (TCVM.LocalTimer != null)
+            {
+                if (currentSetPointIndex < temperatureSetpoints.Count() - 1)
+                {
+                    currentSetPointIndex += 1;
+                    TCVM.CurrSetPoint = (float)temperatureSetpoints[currentSetPointIndex].temperature;
+                    await Task.Run(() =>
+                    {
+                        if (!TC.checkIfConnected())
+                        {
+                            TC.Connect();
+                        }
+                        var status = true;
+                        while (status)
+                        {
+                            try
+                            {
+                                TC.SetTemperature(TCVM.CurrSetPoint);
+                                status = false;
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex.Message);
+                                TCVM.MeasurementFails += 1;
+                            }
+                        }
+                    });
+                    if (temperatureSetpoints[currentSetPointIndex].timeS > 0)
+                    {
+                        TCVM.LocalTimer2.Stop();
+                        TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeS, LocalTimerElapsed2);
+                        TCVM.LocalTimer2.Reset();
+                        TCVM.LocalTimer2.Start();
+                    }
+                    else
+                    {
+                        if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
+                        {
+                            if (temperatureSetpoints[currentSetPointIndex - 1].temperature <= temperatureSetpoints[currentSetPointIndex].temperature)
+                            {
+                                TCVM.LocalTimer2.Stop();
+                                TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_heat, LocalTimerElapsed2);
+                                TCVM.LocalTimer2.Reset();
+                                TCVM.LocalTimer2.Start();
+                            }
+                            else
+                            {
+                                TCVM.LocalTimer2.Stop();
+                                TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_cool, LocalTimerElapsed2);
+                                TCVM.LocalTimer2.Reset();
+                                TCVM.LocalTimer2.Start();
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    TCVM.LocalTimer2.Stop();
+                }
+            }
+        }
         private void IntervalTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox temp = sender as TextBox;
             if(temp != null)
             {
                 var result = rgx.IsMatch(temp.Text);
-                int.TryParse(temp.Text, out var intResult);
+                int.TryParse(temp.Text, out intResult);
                 if(intResult>=1)
                 {
                     TCVM.IsIntervalSetted = result;
-                    localTimerInterval = intResult;
                 }
                 else
                 {
                     TCVM.IsIntervalSetted = false;
                 }
             }
+        }
+
+        private async void SetButt_Click(object sender, RoutedEventArgs e)
+        {
+            if(localSetPoint >= -40 && localSetPoint <= 180)
+            {
+                await Task.Run(() =>
+                {
+                    if (!TC.checkIfConnected())
+                    {
+                        TC.Connect();
+                    }
+                    TC.SetTemperature(localSetPoint);
+                    TCVM.CurrSetPoint = localSetPoint;
+                });
+            }
+        }
+
+        private void SetPointTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox temp = sender as TextBox;
+            if (temp != null)
+            {
+                var result = rgx.IsMatch(temp.Text);
+                int.TryParse(temp.Text, out var intResult);
+                localSetPoint = intResult;
+            }
+        }
+
+        private async void StartButt_Click(object sender, RoutedEventArgs e)
+        {
+            if (TCVM.Interval >= 1)
+            {
+                if(temperatureSetpoints.Count() >= 2)
+                {
+                    await Task.Run(() =>
+                    {
+                        if (!TC.checkIfConnected())
+                        {
+                            TC.Connect();
+                        }
+                        TC.SetTemperature((float)temperatureSetpoints[currentSetPointIndex].temperature);
+                        TCVM.CurrSetPoint = (float)temperatureSetpoints[currentSetPointIndex].temperature;
+                    });
+                }
+                if (temperatureSetpoints[currentSetPointIndex].timeS > 0)
+                {
+                    if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
+                    TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeS, LocalTimerElapsed2);
+                    TCVM.LocalTimer2.Reset();
+                    TCVM.LocalTimer2.Start();
+                }
+                else if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
+                {
+                    if(temperatureSetpoints[currentSetPointIndex+1].temperature >= temperatureSetpoints[currentSetPointIndex].temperature)
+                    {
+                        if(TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
+                        TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_heat, LocalTimerElapsed2);
+                        TCVM.LocalTimer2.Reset();
+                        TCVM.LocalTimer2.Start();
+                    }
+                    else
+                    {
+                        if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
+                        TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_cool, LocalTimerElapsed2);
+                        TCVM.LocalTimer2.Reset();
+                        TCVM.LocalTimer2.Start();
+                    }
+                }
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        ReadTemperature();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                });
+                TCVM.MainPlot.Plot.Axes.AutoScale();
+                TCVM.MainPlot.Refresh();
+                TCVM.LocalTimer.Reset();
+                TCVM.LocalTimer.Start();
+            }
+        }
+
+        private void ipTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string ip = ipTextBox.Text;
+            bool isValid = IsStrictIPv4(ip);
+            ipTextBox.BorderBrush = isValid ? Brushes.Green : Brushes.Red;
+            ipTextBox.Foreground = isValid ? Brushes.Green : Brushes.Red;
+            ConnectButt.IsEnabled = isValid;
+        }
+
+        private void IntervalChangeButt_Click(object sender, RoutedEventArgs e)
+        {
+            TCVM.Interval = intResult;
+            TCVM.LocalTimer.Stop();
+            TCVM.LocalTimer = new LocalTimer(intResult, LocalTimerElapsed);
+            TCVM.LocalTimer.Reset();
+            TCVM.LocalTimer.Start();
         }
     }
 }

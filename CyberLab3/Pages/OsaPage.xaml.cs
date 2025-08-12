@@ -260,7 +260,12 @@ namespace CyberLab3.Pages
                 prevMeasure = currentMeasure;
                 await Task.Run(() =>
                 {
+                    currentMeasure.Time = DateTime.Now;
                     osa.ReadSingle(currentMeasure, tracesTypes);
+                    if(App.isThermalChamberActive)
+                    {
+                        currentMeasure.Temperature = App.globalTemperatureTC;
+                    }
                 });
                 foreach (var trace in currentMeasure.traces.Values)
                 {
@@ -274,6 +279,15 @@ namespace CyberLab3.Pages
                 stopWatch.Stop();
                 OPVM.ElapsedMs = stopWatch.ElapsedMilliseconds;
                 ElapsedTimeTextBlock.Foreground = OPVM.ElapsedMs < OPVM.LocalTimer.Interval*1000 ? Brushes.Green : Brushes.Red;
+                using (var context = new DatabaseContext())
+                {
+                    var latest = context.Measurements
+                        .OrderByDescending(m => m.Id)
+                        .FirstOrDefault();
+                    if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
+                    context.Measurements.Add(currentMeasure);
+                    context.SaveChanges();
+                }
                 OPVM.LocalMeasNum += 1;
             }
         }
@@ -295,6 +309,11 @@ namespace CyberLab3.Pages
                 context.Measurements.Add(currentMeasure);
                 context.SaveChanges();
             }
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

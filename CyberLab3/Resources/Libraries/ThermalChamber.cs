@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -15,8 +16,8 @@ public class ThermalChamber : IDisposable
 {
     private const ushort ADDR_TEMP_PROCESS_VALUE = 0x11A9;
     private const ushort ADDR_HUMID_PROCESS_VALUE = 0x11CD;
-    private const ushort ADDR_TEMP_SETPOINT_BASIC = 0x156F;
-    private const ushort ADDR_HUMID_SETPOINT_BASIC = 0x1571;
+    private const ushort ADDR_TEMP_SETPOINT_BASIC = 0x1581;
+    private const ushort ADDR_HUMID_SETPOINT_BASIC = 0x1583;
     private const ushort ADDR_MODE_READ_WRITE = 0x1A22;
 
     private readonly string _host;
@@ -27,7 +28,7 @@ public class ThermalChamber : IDisposable
     private NetworkStream _stream;
 
     public bool IsConnected = false;
-
+    private bool isStreamReady = true;
     public ThermalChamber(string host, int port = 10001, byte slaveId = 1)
     {
         _host = host;
@@ -35,7 +36,14 @@ public class ThermalChamber : IDisposable
         _slaveId = slaveId;
         _client = new TcpClient();
     }
-
+    public bool checkIfConnected()
+    {
+        if(_client.Connected)
+        {
+            return true;
+        }
+        return false;
+    }
     public void Connect()
     {
         if (_client.Connected) return;
@@ -59,6 +67,10 @@ public class ThermalChamber : IDisposable
     public float ReadTemperature()
     {
         return ReadHoldingRegistersFloat(ADDR_TEMP_PROCESS_VALUE);
+    }
+    public float ReadSetPoint()
+    {
+        return ReadHoldingRegistersFloat(ADDR_TEMP_SETPOINT_BASIC);
     }
     public float ReadHumidity()
     {
@@ -183,23 +195,34 @@ public class ThermalChamber : IDisposable
             throw new InvalidOperationException("Klient nie jest połączony. Wywołaj Connect() przed wysłaniem zapytania.");
         }
 
-        _stream.Write(requestFrame, 0, requestFrame.Length);
-
-        // Czekaj na dane w buforze
-        Thread.Sleep(100); // Daj urządzeniu chwilę na odpowiedź
-
+        while (!isStreamReady) ;
+        isStreamReady = false ;
         byte[] buffer = new byte[256];
-        int bytesRead = _stream.Read(buffer, 0, buffer.Length);
+        int bytesRead = 0;
+        try
+        {
+            _stream.Write(requestFrame, 0, requestFrame.Length);
+            // Czekaj na dane w buforze
+            Thread.Sleep(100); // Daj urządzeniu chwilę na odpowiedź
 
+            bytesRead = _stream.Read(buffer, 0, buffer.Length);
+        }
+        catch(Exception e)
+        {
+            isStreamReady = true;
+            throw new Exception("Error occured in socket.");
+        }
+        finally
+        {
+            isStreamReady = true;
+        }
         byte[] response = new byte[bytesRead];
         Array.Copy(buffer, 0, response, 0, bytesRead);
-
         // Podstawowa walidacja odpowiedzi
         if (response.Length < 5) // Minimalna odpowiedź to [ID][Func/Err][Code][CRC_Lo][CRC_Hi]
         {
             throw new Exception("Odpowiedź od urządzenia jest za krótka.");
         }
-
         // Sprawdzenie sumy kontrolnej CRC
         byte[] responseData = new byte[bytesRead - 2];
         Array.Copy(response, 0, responseData, 0, bytesRead - 2);
@@ -265,6 +288,7 @@ public class ThermalChamber : IDisposable
     private byte[] ToModbusFloat(float value)
     {
         byte[] csharpBytes = BitConverter.GetBytes(value);
+        Array.Reverse(csharpBytes);
         if (csharpBytes.Length != 4) throw new ArgumentException("Błąd konwersji float na bajty.");
         byte[] modbusBytes = { csharpBytes[2], csharpBytes[3], csharpBytes[0], csharpBytes[1] };
         return modbusBytes;

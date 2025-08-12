@@ -24,6 +24,7 @@ public class OsaPageViewModel : INotifyPropertyChanged
     private int _localMeasNum;
     private long _elapsedMs;
     private string _limitStr = "0";
+    private bool _isRepeatEnabled = false;
 
     public event PropertyChangedEventHandler PropertyChanged;
     public OsaPageViewModel()
@@ -137,7 +138,18 @@ public class OsaPageViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsValidIp));
         }
     }
-
+    public bool IsRepeatEnabled
+    {
+        get => _isRepeatEnabled;
+        set
+        {
+            if (_isRepeatEnabled != value)
+            {
+                _isRepeatEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public WpfPlot OSAplot { get; set; } = new WpfPlot();
 
     protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)

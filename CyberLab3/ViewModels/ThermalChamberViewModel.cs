@@ -14,16 +14,86 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
 
     public WpfPlot MainPlot { get; set; } = new WpfPlot();
     public WpfPlot SetPointsPlot { get; set; } = new WpfPlot();
+    public int tauHeating;
+    public int tauCooling;
     private LocalTimer _localTimer;
     private TimeSpan _localEstTime;
     private TimeSpan _localTime;
+    private LocalTimer _localTimer2;
+    private TimeSpan _localEstTime2;
+    private TimeSpan _localTime2;
     private long _elapsedMs;
     private double _elapsedMsAvg;
     private long _measurementFails;
     private Visibility _isLocalTimerEnabled;
     private bool _isConnected = false;
     private bool _isIntervalSetted = false;
-
+    private bool _isSetpointsSetted = false;
+    private string _thermalChamberStatus;
+    private float _currTemperature;
+    private float _currSetPoint;
+    private float _nextSetPoint;
+    private int _interval = 1;
+    public int Interval
+    {
+        get => _interval;
+        set
+        {
+            if (_interval != value)
+            {
+                _interval = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public float CurrTemperature
+    {
+        get => _currTemperature;
+        set
+        {
+            if (_currTemperature != value)
+            {
+                _currTemperature = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public float NextSetPoint
+    {
+        get => _nextSetPoint;
+        set
+        {
+            if (_nextSetPoint != value)
+            {
+                _nextSetPoint = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public float CurrSetPoint
+    {
+        get => _currSetPoint;
+        set
+        {
+            if (_currSetPoint != value)
+            {
+                _currSetPoint = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public string ThermalChamberStatus
+    {
+        get => _thermalChamberStatus;
+        set
+        {
+            if (_thermalChamberStatus != value)
+            {
+                _thermalChamberStatus = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public TimeSpan LocalTime
     {
         get
@@ -95,6 +165,18 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
             }
         }
     }
+    public bool IsSetpointsSetted
+    {
+        get => _isSetpointsSetted;
+        set
+        {
+            if (_isSetpointsSetted != value)
+            {
+                _isSetpointsSetted = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public TimeSpan LocalEstTime
     {
         get => _localEstTime;
@@ -131,7 +213,18 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
             }
         }
     }
-
+    public LocalTimer LocalTimer2
+    {
+        get => _localTimer2;
+        set
+        {
+            if (_localTimer2 != value)
+            {
+                _localTimer2 = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

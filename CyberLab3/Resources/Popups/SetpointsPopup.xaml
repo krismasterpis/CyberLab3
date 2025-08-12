@@ -4,16 +4,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CyberLab3.Resources.Popups"
+        xmlns:converters="clr-namespace:CyberLab3.Resources.Converters"
         xmlns:controls="clr-namespace:CyberLab3.Resources.Controls"
         xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
         mc:Ignorable="d"
         Title="SetpointsPopup" Height="500" Width="850"
-        Loaded="MainWindow_OnLoaded">
+        Loaded="MainWindow_OnLoaded" Closed="Window_Closed">
+    <Window.Resources>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+    </Window.Resources>
 
     <Border Background="{StaticResource BackgroundBrush}">
         <Grid>
             <Grid.ColumnDefinitions>
-                
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -21,18 +26,44 @@
             </Grid.RowDefinitions>
             <ScottPlot:WpfPlot Name="WpfPlot1"
                                BorderBrush="{StaticResource BackgroundBrush}"
-                               Grid.Row="0" Grid.Column="0"
+                               Grid.Row="0" Grid.Column="1"
                            MouseDown="WpfPlot1_OnMouseDown"
                            MouseMove="WpfPlot1_OnMouseMove"
                            MouseUp="WpfPlot1_OnMouseUp"
                            MouseDoubleClick="WpfPlot1_MouseDoubleClick"/>
-            <Border Grid.Row="1" Grid.Column="0" Background="Transparent" CornerRadius="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="Transparent" CornerRadius="10" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <controls:IconTile x:Name="checkButt" Background="{StaticResource DarkBackgroundBrush}" MouseLeftButtonDown="checkButt_MouseLeftButtonDown" Width="35" Height="35" IconWidth="30" IconHeight="30" Margin="0,0,25,0" Padding="6" Cursor="Hand" Icon="M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM404.4 276.7L324.4 404.7C320.2 411.4 313 415.6 305.1 416C297.2 416.4 289.6 412.8 284.9 406.4L236.9 342.4C228.9 331.8 231.1 316.8 241.7 308.8C252.3 300.8 267.3 303 275.3 313.6L302.3 349.6L363.7 251.3C370.7 240.1 385.5 236.6 396.8 243.7C408.1 250.8 411.5 265.5 404.4 276.8z"/>
                     <controls:IconTile x:Name="plusButt" Background="{StaticResource DarkBackgroundBrush}" MouseLeftButtonDown="plusButt_MouseLeftButtonDown" Width="35" Height="35" IconWidth="30" IconHeight="30" Padding="6" Icon="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/>
                     <controls:IconTile x:Name="minusButt" Background="{StaticResource DarkBackgroundBrush}" MouseLeftButtonDown="minusButt_MouseLeftButtonDown" Width="35" Height="35" IconWidth="30" IconHeight="30" Margin="25,0,0,0" Padding="6" Icon="M96 320C96 302.3 110.3 288 128 288L512 288C529.7 288 544 302.3 544 320C544 337.7 529.7 352 512 352L128 352C110.3 352 96 337.7 96 320z"/>
                 </StackPanel>
             </Border>
+            <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                    <GroupBox.Header>
+                        <Label Content="Time domain" FontSize="16" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel Orientation="Vertical">
+                        <CheckBox x:Name="TimeConstantsCheckedBox" Content="Time constants" IsEnabled="{Binding ElementName=UserDefinedCheckedBox, Path=IsChecked, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <CheckBox x:Name="UserDefinedCheckedBox" Content="User defined" IsEnabled="{Binding ElementName=TimeConstantsCheckedBox, Path=IsChecked, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5" IsEnabled="{Binding ElementName=TimeConstantsCheckedBox, Path=IsChecked, Mode=OneWay}">
+                    <GroupBox.Header>
+                        <Label Content="Constans" FontSize="16" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel Orientation="Vertical">
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="τ heating (s) " HorizontalAlignment="Left" Margin="0,0,5,0"/>
+                            <TextBox x:Name="HeatingTextBox" IsEnabled="{Binding IsConnected}" TextChanged="TextBox_TextChanged"/>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="τ cooling (s) " HorizontalAlignment="Left" Margin="0,0,5,0"/>
+                            <TextBox x:Name="CoolingTextBox" IsEnabled="{Binding IsConnected}" TextChanged="TextBox_TextChanged"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
         </Grid>
     </Border>
 </Window>
