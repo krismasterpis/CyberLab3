@@ -4,11 +4,37 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:CyberLab3.Resources.HomeShorts"
+      xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       mc:Ignorable="d"
       d:DesignHeight="489.5" d:DesignWidth="915"
       Title="HomeShort">
 
     <Border CornerRadius="8" Background="{StaticResource DarkBackgroundBrush}">
-
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush2}" Margin="10,5,10,5">
+                <GroupBox.Header>
+                    <Label Content="CPU" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <UniformGrid Columns="2">
+                    <StackPanel Orientation="Vertical">
+                        <Label Content="CPU model: "/>
+                    </StackPanel>
+                    <ScottPlot:WpfPlot x:Name="cpuGaugePlot"/>
+                </UniformGrid>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="1" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush2}" Margin="10,5,10,5">
+                <GroupBox.Header>
+                    <Label Content="Network" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+            </GroupBox>
+        </Grid>
     </Border>
 </Page>

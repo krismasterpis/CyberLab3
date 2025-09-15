@@ -1,4 +1,7 @@
 ﻿using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware.Cpu;
+using ScottPlot;
+using ScottPlot.Plottables;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,7 +28,19 @@ namespace CyberLab3.Resources.HomeShorts
         public HomeShort()
         {
             InitializeComponent();
-            Monitor();
+            //Monitor();
+            double[] values = { 45,100 };
+            cpuGaugePlot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
+            var radialGaugePlot = cpuGaugePlot.Plot.Add.RadialGaugePlot(values);
+            radialGaugePlot.CircularBackground = false;
+            radialGaugePlot.GaugeMode = ScottPlot.RadialGaugeMode.SingleGauge;
+            radialGaugePlot.ShowLevels = false;
+            radialGaugePlot.Colors[0] = ScottPlot.Color.FromColor(System.Drawing.Color.Blue);
+            radialGaugePlot.Colors[1] = ScottPlot.Color.FromColor(System.Drawing.Color.Gray);
+            var text = cpuGaugePlot.Plot.Add.Text("45%", 0, 0);
+            text.LabelFontColor = ScottPlot.Color.FromColor(System.Drawing.Color.Blue);
+            text.LabelFontSize = 26;
+            text.Alignment = Alignment.MiddleCenter;
         }
 
         public void Monitor()

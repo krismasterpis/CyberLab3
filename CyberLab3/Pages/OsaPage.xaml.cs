@@ -315,5 +315,11 @@ namespace CyberLab3.Pages
         {
 
         }
+
+        private void settingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            OsaSettingsPopup popup = new OsaSettingsPopup(osa);
+            bool? result = popup.ShowDialog();
+        }
     }
 }

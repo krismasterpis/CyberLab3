@@ -6,10 +6,15 @@
       xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:local="clr-namespace:CyberLab3.Pages"
       xmlns:controls="clr-namespace:CyberLab3.Resources.Controls"
+      xmlns:converters="clr-namespace:CyberLab3.Resources.Converters"
       mc:Ignorable="d" 
       d:DesignHeight="1079" d:DesignWidth="1870"
       Title="OsaPage" KeepAlive="True">
-
+    
+    <Page.Resources>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+    </Page.Resources>
+    
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width=".3*"/>
@@ -109,21 +114,35 @@
                         </UniformGrid>
                         <Button Content="Clear all" Margin="0,5,0,0"/>
                         <Button x:Name="saveButton" Content="Save all" Margin="0,5,0,0" Click="saveButton_Click"/>
+                        <Button x:Name="settingsButton" Content="Settings" Margin="0,5,0,0" Click="settingsButton_Click"/>
                     </StackPanel>
                 </Border>
                 <Border Grid.Row="2" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
                     <StackPanel Orientation="Vertical">
-                        <Button Content="Add to CLab measurement"/>
-                        <UniformGrid Columns="2" Margin="0,5,0,0">
-                            <TextBlock Text="Interval" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
-                            <TextBox Text="Number of seconds"/>
-                        </UniformGrid>
-                        <Border CornerRadius="16" Background="{StaticResource DarkBackgroundBrush2}" Margin="0,5,0,0" Padding="10,5,10,10">
+                        <Border CornerRadius="16" Background="{StaticResource DarkBackgroundBrush2}" Margin="0,5,0,0" Padding="10,0,10,10">
                             <StackPanel Orientation="Vertical">
-                                <RadioButton Content="Single trace measurement" Margin="0,5,0,0"/>
-                                <ComboBox Margin="0,5,0,0" IsEnabled="False"/>
+                                <CheckBox Content="Single trace measurement" Margin="0,5,0,0"/>
+                                <ComboBox Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="Interval" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
+                            <TextBox Text="Number of seconds" IsEnabled="{Binding ElementName=TriggerCheckBox, Path=IsChecked, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <CheckBox x:Name="TriggerCheckBox" HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" Content="Trigger" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
+                            <ComboBox x:Name="TriggerComboBox" IsEnabled="{Binding ElementName=TriggerCheckBox, Path=IsChecked, Mode=OneWay}">
+                                <ComboBoxItem Content="Thermal chamber temp."/>
+                                <ComboBoxItem Content="DAQ temp."/>
+                            </ComboBox>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <TextBlock Text="Save as" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
+                            <ComboBox x:Name="SaveComboBox" SelectedIndex="0">
+                                <ComboBoxItem Content="database table"/>
+                                <ComboBoxItem Content=".csv files"/>
+                            </ComboBox>
+                        </UniformGrid>
                     </StackPanel>
                 </Border>
                 <GroupBox Grid.Row="3" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5">

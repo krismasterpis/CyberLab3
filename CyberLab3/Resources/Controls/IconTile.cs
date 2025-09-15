@@ -17,11 +17,42 @@ namespace CyberLab3.Resources.Controls
 {
     public class IconTile : Control
     {
+        public static readonly RoutedEvent ClickEvent =
+        EventManager.RegisterRoutedEvent(
+            nameof(Click), RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(IconTile));
+
+        public event RoutedEventHandler Click
+        {
+            add => AddHandler(ClickEvent, value);
+            remove => RemoveHandler(ClickEvent, value);
+        }
+
+        private bool _isPressed;
         static IconTile()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(IconTile), new FrameworkPropertyMetadata(typeof(IconTile)));
         }
+        private void OnMouseDown(object s, MouseButtonEventArgs e)
+        {
+            _isPressed = true;
+            CaptureMouse();
+            e.Handled = true;
+        }
 
+        private void OnMouseUp(object s, MouseButtonEventArgs e)
+        {
+            if (_isPressed)
+            {
+                _isPressed = false;
+                ReleaseMouseCapture();
+
+                var pos = e.GetPosition(this);
+                if (pos.X >= 0 && pos.Y >= 0 && pos.X <= ActualWidth && pos.Y <= ActualHeight)
+                    RaiseEvent(new RoutedEventArgs(ClickEvent, this));
+            }
+            e.Handled = true;
+        }
         public Geometry Icon
         {
             get { return (Geometry)GetValue(IconProperty); }
@@ -58,7 +89,7 @@ namespace CyberLab3.Resources.Controls
             set { SetValue(FillColorProperty, value); }
         }
 
-        public static readonly DependencyProperty FillColorProperty = DependencyProperty.Register("FillColor", typeof(Brush), typeof(IconTile), new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7b8792"))));
+        public static readonly DependencyProperty FillColorProperty = DependencyProperty.Register("FillColor", typeof(Brush), typeof(IconTile), new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff7b8792"))));
 
 
     }

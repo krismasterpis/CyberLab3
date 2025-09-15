@@ -80,6 +80,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="0">
                         <Path x:Name="icon" 
+                          IsHitTestVisible="False"
                           Width="{TemplateBinding IconWidth}" 
                           Height="{TemplateBinding IconHeight}" 
                           Data="{TemplateBinding Icon}" 

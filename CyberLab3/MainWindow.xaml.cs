@@ -1,5 +1,6 @@
 ﻿using CyberLab3.Pages;
 using CyberLab3.Resources.Controls;
+using CyberLab3.ViewModels;
 using SqliteWpfApp;
 using System;
 using System.Drawing;
@@ -45,6 +46,8 @@ namespace CyberLab3
         SwitchPageViewModel SwitchPageVM = new SwitchPageViewModel();
         TemperaturePageViewModel TemperaturePageVM = new TemperaturePageViewModel();
         ThermalChamberViewModel ThermalChamberPageVM = new ThermalChamberViewModel();
+        CyberLabPageViewModel CyberLabPageViewModel = new CyberLabPageViewModel();
+        DatabasePageViewModel DatabasePageViewModel = new DatabasePageViewModel();
         //Strony
         AttenuationPage attenuationPage_;
         HomePage HomePage_;
@@ -54,6 +57,8 @@ namespace CyberLab3
         SwitchPage SwitchPage_;
         TemperaturePage TemperaturePage_;
         ThermalChamberPage ThermalChamberPage_;
+        CyberLabPage CyberLabPage_;
+        DatabasePage DatabasePage_;
         public DatabaseContext db = new DatabaseContext();
         public TimerViewModel TimerVM { get; } = new TimerViewModel();
         public MainWindow()
@@ -70,6 +75,8 @@ namespace CyberLab3
             SwitchPage_ = new SwitchPage(SwitchPageVM);
             TemperaturePage_ = new TemperaturePage(TemperaturePageVM);
             ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM);
+            CyberLabPage_ = new CyberLabPage(CyberLabPageViewModel);
+            DatabasePage_ = new DatabasePage(DatabasePageViewModel);
             sideBar.SelectedIndex = 0;
         }
         void PreventSleep()
@@ -107,6 +114,12 @@ namespace CyberLab3
                         break;
                     case "Attenuation Meas.":
                         navFrame.Navigate(attenuationPage_);
+                        break;
+                    case "CyberLab":
+                        navFrame.Navigate(CyberLabPage_);
+                        break;
+                    case "Database":
+                        navFrame.Navigate(DatabasePage_);
                         break;
                 }
                 //navFrame.Navigate(selected.NavLink);

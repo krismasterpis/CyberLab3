@@ -46,6 +46,7 @@ namespace CyberLab3.Pages
         int currentSetPointIndex = 0;
         int localSetPoint = -100;
         int intResult;
+        string tempType = "Idle";
         public ThermalChamberPage(ThermalChamberViewModel _VM)
         {
             InitializeComponent();
@@ -106,7 +107,7 @@ namespace CyberLab3.Pages
                                 Debug.WriteLine(ex.Message);
                             }
                         }
-                        //TCVM.LocalTimer.Start();
+                        TCVM.LocalTimer.Start();
                     });
                 }
             }
@@ -174,6 +175,49 @@ namespace CyberLab3.Pages
                         TCVM.MeasurementFails += 1;
                     }
                     sw.Stop();
+                    if(temperatureSetpoints.Count > 0)
+                    {
+                        if(currentSetPointIndex > 0)
+                        {
+                            if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
+                            {
+                                if (tempType == "Heating")
+                                {
+                                    if (TCVM.CurrTemperature >= (temperatureSetpoints[currentSetPointIndex].temperature - temperatureSetpoints[currentSetPointIndex - 1].temperature) * 0.63)
+                                    {
+                                        TCVM.LocalTimer2.Start();
+                                    }
+                                }
+                                if (tempType == "Cooling")
+                                {
+                                    if (TCVM.CurrTemperature <= (temperatureSetpoints[currentSetPointIndex].temperature - temperatureSetpoints[currentSetPointIndex - 1].temperature) * 0.63)
+                                    {
+                                        TCVM.LocalTimer2.Start();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
+                            {
+                                if (tempType == "Heating")
+                                {
+                                    if (TCVM.CurrTemperature >= temperatureSetpoints[currentSetPointIndex].temperature - 1 && TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex].temperature + 1)
+                                    {
+                                        TCVM.LocalTimer2.Start();
+                                    }
+                                }
+                                if (tempType == "Cooling")
+                                {
+                                    if (TCVM.CurrTemperature >= temperatureSetpoints[currentSetPointIndex].temperature - 1 && TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex].temperature + 1)
+                                    {
+                                        TCVM.LocalTimer2.Start();
+                                    }
+                                }
+                            }
+                        }
+                    }
                     elapsedMSList.Add((int)sw.ElapsedMilliseconds);
                     TCVM.ElapsedMsAvg = elapsedMSList.Average();
                     TCVM.ElapsedMs = sw.ElapsedMilliseconds;
@@ -226,15 +270,15 @@ namespace CyberLab3.Pages
                             {
                                 TCVM.LocalTimer2.Stop();
                                 TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_heat, LocalTimerElapsed2);
+                                tempType = "Heating";
                                 TCVM.LocalTimer2.Reset();
-                                TCVM.LocalTimer2.Start();
                             }
                             else
                             {
                                 TCVM.LocalTimer2.Stop();
                                 TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_cool, LocalTimerElapsed2);
+                                tempType = "Cooling";
                                 TCVM.LocalTimer2.Reset();
-                                TCVM.LocalTimer2.Start();
                             }
                         }
                     }
@@ -315,19 +359,19 @@ namespace CyberLab3.Pages
                 }
                 else if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
                 {
-                    if(temperatureSetpoints[currentSetPointIndex+1].temperature >= temperatureSetpoints[currentSetPointIndex].temperature)
+                    if (TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex].temperature)
                     {
-                        if(TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
+                        if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
                         TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_heat, LocalTimerElapsed2);
+                        tempType = "Heating";
                         TCVM.LocalTimer2.Reset();
-                        TCVM.LocalTimer2.Start();
                     }
                     else
                     {
                         if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
                         TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_cool, LocalTimerElapsed2);
+                        tempType = "Cooling";
                         TCVM.LocalTimer2.Reset();
-                        TCVM.LocalTimer2.Start();
                     }
                 }
                 await Task.Run(() =>

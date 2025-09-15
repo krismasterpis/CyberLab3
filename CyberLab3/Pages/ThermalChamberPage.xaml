@@ -74,9 +74,9 @@
                             <Button x:Name="SetButt" Content="   SET   " HorizontalAlignment="Right" Margin="0,0,5,0" Click="SetButt_Click"/>
                             <TextBox x:Name="SetPointTextBox" TextChanged="SetPointTextBox_TextChanged"/>
                         </UniformGrid>
-                        <Button x:Name="DefineSetpointButt" Content="Define Setpoints" Margin="0,5,0,0" Click="DefineSetpointButt_Click"/>
+                        <Button x:Name="StartButt" Content="START Cycle" Margin="0,5,0,0"  Click="StartButt_Click" IsEnabled="{Binding IsSetpointsSetted}"/>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
-                            <Button x:Name="StartButt" Content="START" Margin="0,0,5,0" Click="StartButt_Click" IsEnabled="{Binding IsSetpointsSetted}"/>
+                            <Button x:Name="DefineSetpointButt" Content="Define Setpoints" Margin="0,0,5,0" Click="DefineSetpointButt_Click"/>
                             <TextBlock Text="Estimated time:" VerticalAlignment="Center"/>
                         </UniformGrid>
                         <Button x:Name="IntervalChangeButt" Content="Change Interval" Margin="0,5,0,0" Click="IntervalChangeButt_Click" IsEnabled="{Binding IsIntervalSetted}"/>

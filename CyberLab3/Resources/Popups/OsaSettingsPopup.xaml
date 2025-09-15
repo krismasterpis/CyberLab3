@@ -1,0 +1,83 @@
+﻿<Window x:Class="CyberLab3.Resources.Popups.OsaSettingsPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CyberLab3.Resources.Popups"
+        mc:Ignorable="d"
+        Title="OsaSettingsPopup" Height="300" Width="400">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" HorizontalAlignment="Center" Padding="20,10,20,10">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Content="Apply changes" Margin="0,0,10,0" Padding="10,0,10,0"/>
+                <Button Content="Restore default" Padding="10,0,10,0"/>
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="20,10,20,10">
+            <StackPanel Orientation="Vertical">
+                <UniformGrid Columns="2">
+                    <Label Content="Resolution (nm)"/>
+                    <ComboBox x:Name="ResComboBox" VerticalAlignment="Center">
+                        <ComboBoxItem>0.03 nm</ComboBoxItem>
+                        <ComboBoxItem>0.05 nm</ComboBoxItem>
+                        <ComboBoxItem>0.07 nm</ComboBoxItem>
+                        <ComboBoxItem>0.10 nm</ComboBoxItem>
+                        <ComboBoxItem>0.20 nm</ComboBoxItem>
+                        <ComboBoxItem>0.50 nm</ComboBoxItem>
+                        <ComboBoxItem>1.00 nm</ComboBoxItem>
+                    </ComboBox>
+                </UniformGrid>
+                <UniformGrid Columns="2">
+                    <Label Content="VBW (Hz)"/>
+                    <ComboBox x:Name="VbwComboBox" VerticalAlignment="Center">
+                        <ComboBoxItem>10</ComboBoxItem>
+                        <ComboBoxItem>100</ComboBoxItem>
+                        <ComboBoxItem>200</ComboBoxItem>
+                        <ComboBoxItem>1000</ComboBoxItem>
+                        <ComboBoxItem>2000</ComboBoxItem>
+                        <ComboBoxItem>10000</ComboBoxItem>
+                        <ComboBoxItem>100000</ComboBoxItem>
+                        <ComboBoxItem>1000000</ComboBoxItem>
+                    </ComboBox>
+                </UniformGrid>
+                <UniformGrid Columns="2">
+                    <Label Content="Point Average (pts)"/>
+                    <TextBox x:Name="PaTextBox" VerticalAlignment="Center"/>
+                </UniformGrid>
+                <UniformGrid Columns="2">
+                    <Label Content="Sweep Average (-)"/>
+                    <TextBox x:Name="SaTextBox" VerticalAlignment="Center"/>
+                </UniformGrid>
+                <UniformGrid Columns="2">
+                    <Label Content="Smooth (-)"/>
+                    <ComboBox x:Name="SmoothComboBox" VerticalAlignment="Center">
+                        <ComboBoxItem>True</ComboBoxItem>
+                        <ComboBoxItem>False</ComboBoxItem>
+                    </ComboBox>
+                </UniformGrid>
+                <UniformGrid Columns="2">
+                    <Label Content="Sampling Points (pts)"/>
+                    <ComboBox x:Name="SpComboBox" VerticalAlignment="Center">
+                        <ComboBoxItem>51</ComboBoxItem>
+                        <ComboBoxItem>101</ComboBoxItem>
+                        <ComboBoxItem>251</ComboBoxItem>
+                        <ComboBoxItem>501</ComboBoxItem>
+                        <ComboBoxItem>1001</ComboBoxItem>
+                        <ComboBoxItem>2001</ComboBoxItem>
+                        <ComboBoxItem>5001</ComboBoxItem>
+                        <ComboBoxItem>10001</ComboBoxItem>
+                        <ComboBoxItem>20001</ComboBoxItem>
+                        <ComboBoxItem>50001</ComboBoxItem>
+                    </ComboBox>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
