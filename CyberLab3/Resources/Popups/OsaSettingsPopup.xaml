@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" HorizontalAlignment="Center" Padding="20,10,20,10">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <Button Content="Apply changes" Margin="0,0,10,0" Padding="10,0,10,0"/>
+                <Button x:Name="applyButt" Content="Apply changes" Margin="0,0,10,0" Padding="10,0,10,0" Click="applyButt_Click"/>
                 <Button Content="Restore default" Padding="10,0,10,0"/>
             </StackPanel>
         </Border>
@@ -58,8 +58,12 @@
                 <UniformGrid Columns="2">
                     <Label Content="Smooth (-)"/>
                     <ComboBox x:Name="SmoothComboBox" VerticalAlignment="Center">
-                        <ComboBoxItem>True</ComboBoxItem>
-                        <ComboBoxItem>False</ComboBoxItem>
+                        <ComboBoxItem>OFF</ComboBoxItem>
+                        <ComboBoxItem>3</ComboBoxItem>
+                        <ComboBoxItem>5</ComboBoxItem>
+                        <ComboBoxItem>7</ComboBoxItem>
+                        <ComboBoxItem>9</ComboBoxItem>
+                        <ComboBoxItem>11</ComboBoxItem>
                     </ComboBox>
                 </UniformGrid>
                 <UniformGrid Columns="2">

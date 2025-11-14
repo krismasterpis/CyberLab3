@@ -1,6 +1,7 @@
 ﻿using CyberLab3.Resources.Libraries;
 using ScottPlot;
 using ScottPlot.Plottables;
+using ScottPlot.TickGenerators;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -85,6 +86,7 @@ namespace CyberLab3.Resources.Popups
         {
             MyLabels = new List<Text>();
             MyScatterPlot = WpfPlot1.Plot.Add.Scatter(MyPointsX, MyPointsY);
+            WpfPlot1.Plot.Axes.Bottom.TickGenerator = new NumericFixedInterval(1);
             WpfPlot1.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
             PixelPadding padding = new PixelPadding(75, 35, 75, 35);
             WpfPlot1.Plot.Layout.Fixed(padding);
@@ -143,9 +145,9 @@ namespace CyberLab3.Resources.Popups
                     if(intVal != null && doubleVal != null)
                     {
                         MyPointsY[nearestPoint.Index] = (double)doubleVal;
-                        if (intVal == 0)
+                        if (intVal <= 0)
                         {
-                            MyTimes.Add(-1);
+                            MyTimes[nearestPoint.Index] = -1;
                         }
                         else
                         {
@@ -172,7 +174,7 @@ namespace CyberLab3.Resources.Popups
                 int index = draggedPointIndex.Value;
                 if(mouseCoordinates.Y >= -40 && mouseCoordinates.Y <= 180)
                 {
-                    MyPointsY[index] = mouseCoordinates.Y;
+                    MyPointsY[index] = Math.Round(mouseCoordinates.Y,1);
                     double originalX = MyPointsX[index];
                     highlightedMarker.Location = new Coordinates(originalX, mouseCoordinates.Y);
                     UpdateLabel(index, MyTimes[index]);
@@ -313,6 +315,8 @@ namespace CyberLab3.Resources.Popups
             }
             TCVM.tauCooling = tau_cool;
             TCVM.tauHeating = tau_heat;
+            TCVM.LoopMode = (bool)LoopCheckedBox.IsChecked;
+            TCVM.ReverseMode = (bool)ReverseCheckedBox.IsChecked;
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -377,13 +381,13 @@ public class TwoNumbersInputDialog : Window
         // Walidacja int
         if (int.TryParse(_intTextBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int intVal))
         {
-            if(intVal > 0)
+            if(intVal >= 0)
             {
                 IntValue = intVal;
             }
             else
             {
-                MessageBox.Show("Parse correct value greater than 0!", "Error",
+                MessageBox.Show("Parse correct value greater or equal 0!", "Error",
                                 MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

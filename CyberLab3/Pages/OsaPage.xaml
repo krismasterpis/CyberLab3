@@ -105,19 +105,30 @@
                     <StackPanel Orientation="Vertical">
                         <UniformGrid Columns="3">
                             <Button x:Name="SingleButton" Content="Single" Margin="0,0,5,0" Click="SingleButton_Click"/>
-                            <Button x:Name="RepeatButton" Content="Repeat" Margin="5,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
-                            <Button x:Name="StopButton" Content="Stop" Margin="5,0,0,0" Click="StopButton_Click"  IsEnabled="{Binding IsRepeatEnabled}"/>
                         </UniformGrid>
-                        <UniformGrid Columns="2">
+                        <UniformGrid Columns="5">
+                            <Button x:Name="LiveButton" Content="Live" Margin="5,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="LoopButton" Content="Loop" Margin="5,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="StopButton" Content="Stop" Margin="5,0,0,0" Click="StopButton_Click"  IsEnabled="{Binding IsRepeatEnabled}"/>
                             <TextBlock Text="{Binding LimitStr, StringFormat=Interval (s)&gt;\{0\}}" Margin="0,5,5,0" HorizontalAlignment="Right"/>
                             <TextBox x:Name="IntervalTextBox" Margin="5,5,0,0" PreviewTextInput="IntervalTextBox_PreviewTextInput"/>
                         </UniformGrid>
                         <Button Content="Clear all" Margin="0,5,0,0"/>
-                        <Button x:Name="saveButton" Content="Save all" Margin="0,5,0,0" Click="saveButton_Click"/>
+                        <UniformGrid Columns="3" Margin="0,5,0,0">
+                            <Button x:Name="saveButton" Content="Save all" Click="saveButton_Click"/>
+                            <TextBlock Text="Save to" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
+                            <ComboBox x:Name="SaveComboBox2" SelectedIndex="0">
+                                <ComboBoxItem Content="database table"/>
+                                <ComboBoxItem Content=".csv files"/>
+                            </ComboBox>
+                        </UniformGrid>
                         <Button x:Name="settingsButton" Content="Settings" Margin="0,5,0,0" Click="settingsButton_Click"/>
                     </StackPanel>
                 </Border>
-                <Border Grid.Row="2" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
+                <GroupBox Grid.Row="2" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
+                    <GroupBox.Header>
+                        <Label Content="CyberLab" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
                     <StackPanel Orientation="Vertical">
                         <Border CornerRadius="16" Background="{StaticResource DarkBackgroundBrush2}" Margin="0,5,0,0" Padding="10,0,10,10">
                             <StackPanel Orientation="Vertical">
@@ -138,13 +149,18 @@
                         </UniformGrid>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
                             <TextBlock Text="Save as" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
-                            <ComboBox x:Name="SaveComboBox" SelectedIndex="0">
+                            <ComboBox x:Name="SaveComboBox" SelectedIndex="0" SelectionChanged="SaveComboBox_SelectionChanged">
                                 <ComboBoxItem Content="database table"/>
                                 <ComboBoxItem Content=".csv files"/>
                             </ComboBox>
                         </UniformGrid>
+                        <UniformGrid x:Name="tableSelectionGroup" Columns="2" Margin="0,5,0,0" IsEnabled="True">
+                            <ComboBox x:Name="tableComboBox" Margin="0,0,5,0"/>
+                            <Button x:Name="addTableButt" Content="Add new table" Margin="5,0,0,0"/>
+                        </UniformGrid>
+                        <Button Content="Start measurements" Margin="0,5,0,0"/>
                     </StackPanel>
-                </Border>
+                </GroupBox>
                 <GroupBox Grid.Row="3" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5">
                     <GroupBox.Header>
                         <Label Content="Markers" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>

@@ -31,9 +31,9 @@
             </Border>
             <Border  CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="10">
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="{Binding LocalTimer.Time, StringFormat=Measurement \in: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
-                    <TextBlock Text="{Binding ElapsedMs, StringFormat=Measurement \took: \{0\} ms}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
-                    <TextBlock Text="{Binding ElapsedMsAvg, StringFormat=Measurement \avg. time: \{0:#.#\} ms}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                    <TextBlock Text="{Binding LocalTimer.Time, StringFormat=Timer: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                    <TextBlock Text="{Binding ElapsedMs, StringFormat=Response \time: \{0\} ms}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                    <TextBlock Text="{Binding ElapsedMsAvg, StringFormat=Response \avg. time: \{0:#.#\} ms}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
                 </StackPanel>
             </Border>
         </StackPanel>
@@ -71,7 +71,7 @@
                         <TextBlock Text="{Binding CurrSetPoint, StringFormat=Setpoint \Temperature: {0:#.#}}" Margin="0,5,0,0"/>
                         <TextBlock Text="{Binding NextSetPoint, StringFormat=Next \Setpoint \Temperature: {0:#.#}}" Margin="0,5,0,0"/>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
-                            <Button x:Name="SetButt" Content="   SET   " HorizontalAlignment="Right" Margin="0,0,5,0" Click="SetButt_Click"/>
+                            <Button x:Name="SetButt" Content="Set Temperature" Margin="0,0,5,0" Click="SetButt_Click"/>
                             <TextBox x:Name="SetPointTextBox" TextChanged="SetPointTextBox_TextChanged"/>
                         </UniformGrid>
                         <Button x:Name="StartButt" Content="START Cycle" Margin="0,5,0,0"  Click="StartButt_Click" IsEnabled="{Binding IsSetpointsSetted}"/>
@@ -83,6 +83,10 @@
                         <UniformGrid Columns="2" Margin="0,5,0,0">
                             <TextBlock Text="{Binding Interval, StringFormat=Interval {0} (s)}" HorizontalAlignment="Right" Margin="0,0,5,0"/>
                             <TextBox x:Name="IntervalTextBox" IsEnabled="{Binding IsConnected}" TextChanged="IntervalTextBox_TextChanged"/>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,5,0,0">
+                            <Button x:Name="ClearButton" Content="Clear Plot" Margin="0,0,5,0" Click="ClearButton_Click"/>
+                            <Button x:Name="SaveButton" Content="Save All" Margin="0,0,5,0" Click="SaveButton_Click"/>
                         </UniformGrid>
                     </StackPanel>
                 </GroupBox>

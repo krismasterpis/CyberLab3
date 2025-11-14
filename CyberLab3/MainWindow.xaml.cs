@@ -74,7 +74,7 @@ namespace CyberLab3
             OsaPage_ = new OsaPage(OsaPageVM, db);
             SwitchPage_ = new SwitchPage(SwitchPageVM);
             TemperaturePage_ = new TemperaturePage(TemperaturePageVM);
-            ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM);
+            ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM, OsaPageVM);
             CyberLabPage_ = new CyberLabPage(CyberLabPageViewModel);
             DatabasePage_ = new DatabasePage(DatabasePageViewModel);
             sideBar.SelectedIndex = 0;

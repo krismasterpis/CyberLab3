@@ -63,6 +63,15 @@
                         </UniformGrid>
                     </StackPanel>
                 </GroupBox>
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                    <GroupBox.Header>
+                        <Label Content="Addons" FontSize="16" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel Orientation="Vertical">
+                        <CheckBox x:Name="LoopCheckedBox" Content="Loop mode" IsChecked="False" IsEnabled="{Binding ElementName=ReverseCheckedBox, Path=IsChecked, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <CheckBox x:Name="ReverseCheckedBox" Content="Reverse mode" IsChecked="False" IsEnabled="{Binding ElementName=LoopCheckedBox, Path=IsChecked, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+                </GroupBox>
             </StackPanel>
         </Grid>
     </Border>

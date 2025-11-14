@@ -1,13 +1,18 @@
 ﻿using CyberLab3.Resources.Controls;
 using CyberLab3.Resources.Libraries;
 using CyberLab3.Resources.Popups;
+using CyberLab3.Resources.Services;
+using HarfBuzzSharp;
+using Microsoft.Win32;
 using ScottPlot;
 using ScottPlot.Plottables;
+using ScottPlot.TickGenerators;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -30,7 +35,7 @@ namespace CyberLab3.Pages
     public partial class ThermalChamberPage : Page
     {
         private static readonly Regex rgx = new Regex("[0-9]+");
-
+        private readonly TimerEventService _timerService;
         Stopwatch sw = new Stopwatch();
         ThermalChamberViewModel TCVM;
         ThermalChamber TC;
@@ -54,24 +59,26 @@ namespace CyberLab3.Pages
         int intResult;
         string tempType = "Idle";
         bool measurementFailed = false;
-        public ThermalChamberPage(ThermalChamberViewModel _VM)
+        bool measurementEnabled = false;
+        public ThermalChamberPage(ThermalChamberViewModel _VM, OsaPageViewModel _OPVM)
         {
             InitializeComponent();
             TCVM = _VM;
             DataContext = TCVM;
+            _timerService = ((App)Application.Current).TimerService;
             TCVM.MainPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
             TCVM.SetPointsPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
             PixelPadding padding = new PixelPadding(75, 35, 75, 35);
             TCVM.MainPlot.Plot.Layout.Fixed(padding);
             TCVM.SetPointsPlot.Plot.Layout.Fixed(padding);
-            TCVM.MainPlot.Plot.Axes.Left.Label.Text = "Vertical Axis";
-            TCVM.SetPointsPlot.Plot.Axes.Left.Label.Text = "Vertical Axis";
+            TCVM.MainPlot.Plot.Axes.Left.Label.Text = "Temperature (°C)";
+            TCVM.SetPointsPlot.Plot.Axes.Left.Label.Text = "Temperature (°C)";
             TCVM.MainPlot.Plot.Axes.Left.Label.FontSize = 20;
             TCVM.SetPointsPlot.Plot.Axes.Left.Label.FontSize = 20;
             TCVM.MainPlot.Plot.Axes.Left.TickLabelStyle.FontSize = 16;
             TCVM.SetPointsPlot.Plot.Axes.Left.TickLabelStyle.FontSize = 16;
-            TCVM.MainPlot.Plot.Axes.Bottom.Label.Text = "Horizontal Axis";
-            TCVM.SetPointsPlot.Plot.Axes.Bottom.Label.Text = "Horizontal Axis";
+            TCVM.MainPlot.Plot.Axes.Bottom.Label.Text = "Time (s)";
+            TCVM.SetPointsPlot.Plot.Axes.Bottom.Label.Text = "Setpoints (-)";
             TCVM.MainPlot.Plot.Axes.Bottom.Label.FontSize = 20;
             TCVM.SetPointsPlot.Plot.Axes.Bottom.Label.FontSize = 20;
             TCVM.MainPlot.Plot.Axes.Bottom.TickLabelStyle.FontSize = 16;
@@ -81,6 +88,7 @@ namespace CyberLab3.Pages
             setpointsScatter.LineWidth = 3;
             setpointsScatter.MarkerStyle.Size = 10;
             setpointsScatter.MarkerStyle.FillColor = ScottPlot.Color.FromColor(System.Drawing.Color.Blue);
+            TCVM.SetPointsPlot.Plot.Axes.Bottom.TickGenerator = new NumericFixedInterval(1);
             temperatureScatter = TCVM.MainPlot.Plot.Add.Scatter(temperatureX, temperatureY);
             temperatureScatter.MarkerStyle.Size = 10;
             errorScatter = TCVM.MainPlot.Plot.Add.Scatter(errorX,errorY);
@@ -102,11 +110,13 @@ namespace CyberLab3.Pages
                     TC = new ThermalChamber(ipTextBox.Text);
                     await Task.Run(() =>
                     {
+                        var counter = 0;
                         var status = true;
-                        while(status)
+                        while(counter < 10 && status)
                         {
                             try
                             {
+                                counter += 1;
                                 TC.Connect();
                                 TC.SetOperatingMode(Mb1OperatingMode.Manual);
                                 TCVM.CurrSetPoint = TC.ReadSetPoint();
@@ -208,47 +218,15 @@ namespace CyberLab3.Pages
                         measurementFailed = true;
                     }
                     sw.Stop();
-                    if(temperatureSetpoints.Count > 0)
+                    if (measurementEnabled && temperatureSetpoints.Count > 0 && currentSetPointIndex <= temperatureSetpoints.Count() - 1)
                     {
-                        if(currentSetPointIndex > 0)
+                        if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
                         {
-                            if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
-                            {
-                                if (tempType == "Heating")
-                                {
-                                    if (TCVM.CurrTemperature >= temperatureSetpoints[currentSetPointIndex - 1].temperature + (temperatureSetpoints[currentSetPointIndex].temperature - temperatureSetpoints[currentSetPointIndex - 1].temperature) * 0.63)
-                                    {
-                                        TCVM.LocalTimer2.Start();
-                                    }
-                                }
-                                if (tempType == "Cooling")
-                                {
-                                    if (TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex - 1].temperature + (temperatureSetpoints[currentSetPointIndex].temperature - temperatureSetpoints[currentSetPointIndex - 1].temperature) * 0.63)
-                                    {
-                                        TCVM.LocalTimer2.Start();
-                                    }
-                                }
-                            }
+                            //tu zrobić zliczane tau
                         }
-                        else
+                        if ((tempType == "Cooling" && TCVM.CurrTemperature <= tauLine.Y) || (tempType == "Heating" && TCVM.CurrTemperature >= tauLine.Y) || (TCVM.CurrTemperature > (TCVM.CurrSetPoint-0.4) && TCVM.CurrTemperature < (TCVM.CurrSetPoint+0.4)))
                         {
-                            if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
-                            {
-                                if (tempType == "Heating")
-                                {
-                                    if (TCVM.CurrTemperature >= temperatureSetpoints[currentSetPointIndex].temperature - 1 && TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex].temperature + 1)
-                                    {
-                                        TCVM.LocalTimer2.Start();
-                                    }
-                                }
-                                if (tempType == "Cooling")
-                                {
-                                    if (TCVM.CurrTemperature >= temperatureSetpoints[currentSetPointIndex].temperature - 1 && TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex].temperature + 1)
-                                    {
-                                        TCVM.LocalTimer2.Start();
-                                    }
-                                }
-                            }
+                            TCVM.LocalTimer2.Start();
                         }
                     }
                     elapsedMSList.Add((int)sw.ElapsedMilliseconds);
@@ -266,6 +244,7 @@ namespace CyberLab3.Pages
                 if (currentSetPointIndex < temperatureSetpoints.Count() - 1)
                 {
                     currentSetPointIndex += 1;
+                    _timerService.RaiseTimerEvent();
                     TCVM.CurrSetPoint = (float)temperatureSetpoints[currentSetPointIndex].temperature;
                     await Task.Run(() =>
                     {
@@ -292,33 +271,37 @@ namespace CyberLab3.Pages
                             }
                         }
                     });
+                    var tau = temperatureSetpoints[currentSetPointIndex - 1].temperature + (temperatureSetpoints[currentSetPointIndex].temperature - temperatureSetpoints[currentSetPointIndex - 1].temperature) * 0.63;
                     if (temperatureSetpoints[currentSetPointIndex].timeS > 0)
                     {
                         TCVM.LocalTimer2.Stop();
-                        TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeS, LocalTimerElapsed2);
+                        if(temperatureSetpoints[currentSetPointIndex].timeS == -1)
+                        {
+                            TCVM.LocalTimer2 = new LocalTimer(0, LocalTimerElapsed2);
+                        }
+                        else
+                        {
+                            TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeS, LocalTimerElapsed2);
+                        }
+                        if (temperatureSetpoints[currentSetPointIndex - 1].temperature <= temperatureSetpoints[currentSetPointIndex].temperature)
+                        {
+                            tempType = "Heating";
+                        }
+                        else
+                        {
+                            tempType = "Cooling";
+                        }
                         TCVM.LocalTimer2.Reset();
-                        TCVM.LocalTimer2.Start();
                     }
                     else
                     {
                         if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
                         {
-                            var tau = temperatureSetpoints[currentSetPointIndex - 1].temperature + (temperatureSetpoints[currentSetPointIndex].temperature - temperatureSetpoints[currentSetPointIndex - 1].temperature) * 0.63;
                             if (temperatureSetpoints[currentSetPointIndex - 1].temperature <= temperatureSetpoints[currentSetPointIndex].temperature)
                             {
                                 TCVM.LocalTimer2.Stop();
                                 TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_heat, LocalTimerElapsed2);
                                 tempType = "Heating";
-                                if (tauLine == null)
-                                {
-                                    tauLine = TCVM.MainPlot.Plot.Add.HorizontalLine(tau);
-                                    tauLine.LineStyle.Color = ScottPlot.Color.FromHex("#008000");
-                                    tauLine.LineStyle.Pattern = LinePattern.Dashed;
-                                }
-                                else
-                                {
-                                    tauLine.Position = tau;
-                                }
                                 TCVM.LocalTimer2.Reset();
                             }
                             else
@@ -326,24 +309,25 @@ namespace CyberLab3.Pages
                                 TCVM.LocalTimer2.Stop();
                                 TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_cool, LocalTimerElapsed2);
                                 tempType = "Cooling";
-                                if (tauLine == null)
-                                {
-                                    tauLine = TCVM.MainPlot.Plot.Add.HorizontalLine(tau);
-                                    tauLine.LineStyle.Color = ScottPlot.Color.FromHex("#008000");
-                                    tauLine.LineStyle.Pattern = LinePattern.Dashed;
-                                }
-                                else
-                                {
-                                    tauLine.Position = tau;
-                                }
                                 TCVM.LocalTimer2.Reset();
                             }
                         }
+                    }
+                    if (tauLine == null)
+                    {
+                        tauLine = TCVM.MainPlot.Plot.Add.HorizontalLine(tau);
+                        tauLine.LineStyle.Color = ScottPlot.Color.FromHex("#008000");
+                        tauLine.LineStyle.Pattern = LinePattern.Dashed;
+                    }
+                    else
+                    {
+                        tauLine.Position = tau;
                     }
                 }
                 else
                 {
                     TCVM.LocalTimer2.Stop();
+                    measurementEnabled = false;
                 }
             }
         }
@@ -428,12 +412,21 @@ namespace CyberLab3.Pages
                         }
                     });
                 }
+                var tau = TCVM.CurrTemperature + (temperatureSetpoints[currentSetPointIndex].temperature - TCVM.CurrTemperature) * 0.63;
                 if (temperatureSetpoints[currentSetPointIndex].timeS > 0)
                 {
                     if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
                     TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeS, LocalTimerElapsed2);
-                    TCVM.LocalTimer2.Reset();
-                    TCVM.LocalTimer2.Start();
+                    if (TCVM.CurrTemperature <= temperatureSetpoints[currentSetPointIndex].temperature)
+                    {
+                        tempType = "Heating";
+                    }
+                    else
+                    {
+                        tempType = "Cooling";
+                    }
+                    //TCVM.LocalTimer2.Reset();
+                    //TCVM.LocalTimer2.Start();
                 }
                 else if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
                 {
@@ -442,15 +435,25 @@ namespace CyberLab3.Pages
                         if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
                         TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_heat, LocalTimerElapsed2);
                         tempType = "Heating";
-                        TCVM.LocalTimer2.Reset();
+                        //TCVM.LocalTimer2.Reset();
                     }
                     else
                     {
                         if (TCVM.LocalTimer2 != null) TCVM.LocalTimer2.Stop();
                         TCVM.LocalTimer2 = new LocalTimer(temperatureSetpoints[currentSetPointIndex].timeConstS_cool, LocalTimerElapsed2);
                         tempType = "Cooling";
-                        TCVM.LocalTimer2.Reset();
+                        //TCVM.LocalTimer2.Reset();
                     }
+                }
+                if (tauLine == null)
+                {
+                    tauLine = TCVM.MainPlot.Plot.Add.HorizontalLine(tau);
+                    tauLine.LineStyle.Color = ScottPlot.Color.FromHex("#008000");
+                    tauLine.LineStyle.Pattern = LinePattern.Dashed;
+                }
+                else
+                {
+                    tauLine.Position = tau;
                 }
                 await Task.Run(() =>
                 {
@@ -467,6 +470,7 @@ namespace CyberLab3.Pages
                 TCVM.MainPlot.Refresh();
                 TCVM.LocalTimer.Reset();
                 TCVM.LocalTimer.Start();
+                measurementEnabled = true;
             }
         }
 
@@ -486,6 +490,45 @@ namespace CyberLab3.Pages
             TCVM.LocalTimer = new LocalTimer(intResult, LocalTimerElapsed);
             TCVM.LocalTimer.Reset();
             TCVM.LocalTimer.Start();
+        }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            temperatureX.Clear();
+            temperatureY.Clear();
+            errorX.Clear();
+            errorY.Clear();
+            TCVM.MainPlot.Refresh();
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFolderDialog();
+            dialog.Title = "Choose destination folder";
+            var dateTime = DateTime.Now;
+            if (dialog.ShowDialog() == true)
+            {
+                string folderPath = dialog.FolderName;
+                if(folderPath != null && folderPath != string.Empty)
+                {
+                    var csv = new StringBuilder();
+                    string newLine = string.Empty;
+                    newLine = $"Time (s); Temperature (°C)";
+                    csv.AppendLine(newLine);
+                    List<string> stringList = new List<string>();
+                    for (int i = 0; i < temperatureX.Count(); i++)
+                    {
+                        newLine = string.Empty;
+                        stringList.Clear();
+                        stringList.Add(temperatureX[i].ToString());
+                        stringList.Add(temperatureY[i].ToString());
+                        newLine = String.Join(';', stringList);
+                        csv.AppendLine(newLine);
+                    }
+                    var FileName = $"{folderPath}/Temperature-{dateTime.Day}-{dateTime.Month}-{dateTime.Year}_{dateTime.Hour}-{dateTime.Minute}-{dateTime.Second}.csv";
+                    File.WriteAllText(FileName, csv.ToString());
+                }
+            }
         }
     }
 }

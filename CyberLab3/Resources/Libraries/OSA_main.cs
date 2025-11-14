@@ -138,7 +138,7 @@ namespace CyberLab3.Resources.Libraries
 
         public int SWEEP_AVERAGE_COUNT;
 
-        public int SMOOTHING_ENABLED;
+        public string SMOOTHING_ENABLED;
 
         public VbwSetting VBW_SETTING;
 
@@ -249,7 +249,7 @@ namespace CyberLab3.Resources.Libraries
                     }
                     IsConnected = true;
                 }
-                ReadParameters();
+                if(IsConnected) ReadParameters();
             }
             catch (Exception e)
             {
@@ -424,14 +424,7 @@ namespace CyberLab3.Resources.Libraries
             temp = Query(AnritsuMs9740AScpiCommands.SWEEP_AVERAGE_QUERY);
             if (int.TryParse(temp, out resultI)) SWEEP_AVERAGE_COUNT = resultI;
             temp = Query(AnritsuMs9740AScpiCommands.SMOOTHING_QUERY);
-            if (temp != "OFF")
-            {
-                if (int.TryParse(temp, out resultI)) SMOOTHING_ENABLED = resultI;
-            }
-            else
-            {
-                SMOOTHING_ENABLED = -1;
-            }    
+            SMOOTHING_ENABLED = temp;    
             temp = Query(AnritsuMs9740AScpiCommands.VIDEO_BANDWIDTH_QUERY);
             switch (temp)
             {

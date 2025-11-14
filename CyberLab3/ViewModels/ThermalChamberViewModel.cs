@@ -34,6 +34,8 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
     private float _currSetPoint;
     private float _nextSetPoint;
     private int _interval = 1;
+    private bool _loopMode = false;
+    private bool _reverseMode = false;
     public int Interval
     {
         get => _interval;
@@ -137,6 +139,30 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
             if (_measurementFails != value)
             {
                 _measurementFails = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public bool LoopMode
+    {
+        get => _loopMode;
+        set
+        {
+            if (_loopMode != value)
+            {
+                _loopMode = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public bool ReverseMode
+    {
+        get => _reverseMode;
+        set
+        {
+            if (_reverseMode != value)
+            {
+                _reverseMode = value;
                 OnPropertyChanged();
             }
         }

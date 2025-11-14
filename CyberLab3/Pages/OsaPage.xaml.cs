@@ -1,8 +1,11 @@
 ﻿using CyberLab3.Resources.Controls;
 using CyberLab3.Resources.Libraries;
 using CyberLab3.Resources.Popups;
+using CyberLab3.Resources.Services;
+using HarfBuzzSharp;
 using Ivi.Visa;
 using IviVisaNetSample;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NationalInstruments.Visa;
 using ScottPlot;
@@ -17,6 +20,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,6 +35,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace CyberLab3.Pages
@@ -42,6 +47,7 @@ namespace CyberLab3.Pages
     public partial class OsaPage : Page
     {
         private static readonly Regex rgx = new Regex("[0-9]+");
+        private readonly TimerEventService _timerService;
         private Stopwatch stopWatch = new Stopwatch();
         OSA osa = new OSA();
         OsaPageViewModel OPVM;
@@ -54,21 +60,25 @@ namespace CyberLab3.Pages
         Measurement currentMeasure;
         Measurement prevMeasure;
         ScottPlot.AxisRules.MaximumBoundary normalRule;
+        bool dataBaseEnabled = false;
+        bool cyberLabEnabled = false;
         public OsaPage(OsaPageViewModel _VM, DatabaseContext db)
         {
             InitializeComponent();
             var latest = db.Measurements
                                 .OrderByDescending(m => m.Time)
                                 .FirstOrDefault();
+            _timerService = ((App)System.Windows.Application.Current).TimerService;
+            _timerService.TimerTriggered += OnTimerTriggered;
             OPVM = _VM;
             DataContext = OPVM;
             OPVM.OSAplot.Plot.FigureBackground.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Transparent);
             PixelPadding padding = new PixelPadding(75, 35, 75, 35);
             OPVM.OSAplot.Plot.Layout.Fixed(padding);
-            OPVM.OSAplot.Plot.Axes.Left.Label.Text = "Vertical Axis";
+            OPVM.OSAplot.Plot.Axes.Left.Label.Text = "Optical Power (dBm)";
             OPVM.OSAplot.Plot.Axes.Left.Label.FontSize = 20;
             OPVM.OSAplot.Plot.Axes.Left.TickLabelStyle.FontSize = 16;
-            OPVM.OSAplot.Plot.Axes.Bottom.Label.Text = "Horizontal Axis";
+            OPVM.OSAplot.Plot.Axes.Bottom.Label.Text = "Wavelength (nm)";
             OPVM.OSAplot.Plot.Axes.Bottom.Label.FontSize = 20;
             OPVM.OSAplot.Plot.Axes.Bottom.TickLabelStyle.FontSize = 16;
             normalRule = new(xAxis: OPVM.OSAplot.Plot.Axes.Bottom,
@@ -91,6 +101,27 @@ namespace CyberLab3.Pages
             }
             OPVM.OSAplot.Refresh();
             OPVM.IpAddress = "172.16.2.80";
+            using (var context = new DatabaseContext())
+            {
+                var connection = context.Database.GetDbConnection();
+                connection.Open(); // Otwarcie połączenia
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name LIMIT 1;";
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string tableName = reader.GetString(0);
+                            tableComboBox.Items.Add(tableName);
+                        }
+                    }
+                }
+            }
+            if(tableComboBox.Items.Count>0)
+            {
+                tableComboBox.SelectedIndex = 0;
+            }
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
@@ -146,6 +177,7 @@ namespace CyberLab3.Pages
             await Task.Run(() =>
             {
                 osa.ReadSingle(currentMeasure, tracesTypes);
+                currentMeasure.Time = DateTime.Now;
             });
             foreach(var trace in currentMeasure.traces.Values)
             {
@@ -251,7 +283,11 @@ namespace CyberLab3.Pages
                 }
             }
         }
-
+        private void OnTimerTriggered()
+        {
+            // tu można wstawić dowolny kod np. odświeżenie danych
+            Debug.WriteLine("Otrzymano sygnał z Page1!");
+        }
         private async void LocalTimerElapsed(object? sender, EventArgs e)
         {
             if(OPVM.LocalTimer != null)
@@ -266,6 +302,7 @@ namespace CyberLab3.Pages
                     {
                         currentMeasure.Temperature = App.globalTemperatureTC;
                     }
+                    currentMeasure.Time = DateTime.Now;
                 });
                 foreach (var trace in currentMeasure.traces.Values)
                 {
@@ -279,14 +316,24 @@ namespace CyberLab3.Pages
                 stopWatch.Stop();
                 OPVM.ElapsedMs = stopWatch.ElapsedMilliseconds;
                 ElapsedTimeTextBlock.Foreground = OPVM.ElapsedMs < OPVM.LocalTimer.Interval*1000 ? Brushes.Green : Brushes.Red;
-                using (var context = new DatabaseContext())
+                if(cyberLabEnabled)
                 {
-                    var latest = context.Measurements
-                        .OrderByDescending(m => m.Id)
-                        .FirstOrDefault();
-                    if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
-                    context.Measurements.Add(currentMeasure);
-                    context.SaveChanges();
+                    if (dataBaseEnabled)
+                    {
+                        using (var context = new DatabaseContext())
+                        {
+                            var latest = context.Measurements
+                                .OrderByDescending(m => m.Id)
+                                .FirstOrDefault();
+                            if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
+                            context.Measurements.Add(currentMeasure);
+                            context.SaveChanges();
+                        }
+                    }
+                    else
+                    {
+                        saveToCSV();
+                    }
                 }
                 OPVM.LocalMeasNum += 1;
             }
@@ -300,14 +347,21 @@ namespace CyberLab3.Pages
 
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var context = new DatabaseContext())
+            if (((ComboBoxItem)SaveComboBox2.SelectedItem)?.Content.ToString() == "database table")
             {
-                var latest = context.Measurements
-                    .OrderByDescending(m => m.Id)
-                    .FirstOrDefault();
-                if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
-                context.Measurements.Add(currentMeasure);
-                context.SaveChanges();
+                using (var context = new DatabaseContext())
+                {
+                    var latest = context.Measurements
+                        .OrderByDescending(m => m.Id)
+                        .FirstOrDefault();
+                    if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
+                    context.Measurements.Add(currentMeasure);
+                    context.SaveChanges();
+                }
+            }
+            else
+            {
+                saveToCSV();
             }
         }
 
@@ -320,6 +374,100 @@ namespace CyberLab3.Pages
         {
             OsaSettingsPopup popup = new OsaSettingsPopup(osa);
             bool? result = popup.ShowDialog();
+        }
+
+        private void SaveComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(SaveComboBox.SelectedItem != null && tableSelectionGroup != null)
+            {
+                if (((ComboBoxItem)SaveComboBox.SelectedItem)?.Content.ToString() == "database table")
+                {
+                    tableSelectionGroup.IsEnabled = true;
+                }
+                else
+                {
+                    tableSelectionGroup.IsEnabled = false;
+                }
+            }   
+        }
+
+        private void saveToCSV()
+        {
+            if (Directory.Exists($"./csv"))
+            {
+                var csv = new StringBuilder();
+                string newLine = string.Empty;
+                newLine = $"Thermal Chamber Temperature; {currentMeasure.Temperature}";
+                csv.AppendLine(newLine);
+                List<string> stringList = new List<string>();
+                newLine = string.Empty;
+                stringList.Clear();
+                stringList.Add("Wavelength (nm)");
+                foreach (var trace in currentMeasure.traces.Values)
+                {
+                    if (trace.type != TraceType.Blank)
+                    {
+                        stringList.Add(trace.name);
+                    }
+                }
+                newLine = String.Join(';', stringList);
+                csv.AppendLine(newLine);
+                for (int j = 0; j < currentMeasure.traces.First().Value.wavelengths.Count(); j++) //trace iteration
+                {
+                    newLine = string.Empty;
+                    stringList.Clear();
+                    stringList.Add(currentMeasure.traces.First().Value.wavelengths[j].ToString());
+                    foreach (var trace in currentMeasure.traces.Values)
+                    {
+                        if (trace.type != TraceType.Blank)
+                        {
+                            stringList.Add(trace.attenuationsRaw[j].ToString());
+                        }
+                    }
+                    newLine = String.Join(';', stringList);
+                    csv.AppendLine(newLine);
+                }
+                var FileName = $"./csv/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
+                File.WriteAllText(FileName, csv.ToString());
+            }
+            else
+            {
+                Directory.CreateDirectory($"./csv");
+                var csv = new StringBuilder();
+                string newLine = string.Empty;
+                newLine = $"Thermal Chamber Temperature; {currentMeasure.Temperature}";
+                csv.AppendLine(newLine);
+                List<string> stringList = new List<string>();
+                newLine = string.Empty;
+                stringList.Clear();
+                stringList.Add("Wavelength (nm)");
+                foreach (var trace in currentMeasure.traces.Values)
+                {
+                    if (trace.type != TraceType.Blank)
+                    {
+                        stringList.Add(trace.name);
+                    }
+                }
+                newLine = String.Join(';', stringList);
+                csv.AppendLine(newLine);
+                for (int j = 0; j < currentMeasure.traces.First().Value.wavelengths.Count(); j++) //trace iteration
+                {
+                    newLine = string.Empty;
+                    stringList.Clear();
+                    stringList.Add(currentMeasure.traces.First().Value.wavelengths[j].ToString());
+                    foreach (var trace in currentMeasure.traces.Values)
+                    {
+                        if (trace.type != TraceType.Blank)
+                        {
+                            stringList.Add(trace.attenuationsRaw[j].ToString());
+                        }
+                    }
+                    newLine = String.Join(';', stringList);
+                    csv.AppendLine(newLine);
+                }
+                var FileName = $"./csv/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
+                File.WriteAllText(FileName, csv.ToString());
+            }
         }
     }
 }
