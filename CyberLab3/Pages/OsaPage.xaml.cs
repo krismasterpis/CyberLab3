@@ -7,6 +7,7 @@ using Ivi.Visa;
 using IviVisaNetSample;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 using NationalInstruments.Visa;
 using ScottPlot;
 using ScottPlot.Plottables;
@@ -62,12 +63,20 @@ namespace CyberLab3.Pages
         ScottPlot.AxisRules.MaximumBoundary normalRule;
         bool dataBaseEnabled = false;
         bool cyberLabEnabled = false;
+        Progress<int> progressIndicator;
+        string csvFolderPath;
+        const string defaultOsaFolderPath = "./csv/OSA";
         public OsaPage(OsaPageViewModel _VM, DatabaseContext db)
         {
             InitializeComponent();
+            csvFolderPath = defaultOsaFolderPath;
             var latest = db.Measurements
                                 .OrderByDescending(m => m.Time)
                                 .FirstOrDefault();
+            progressIndicator = new Progress<int>(value =>
+            {
+                MeasurementProgressBar.Value = value;
+            });
             _timerService = ((App)System.Windows.Application.Current).TimerService;
             _timerService.TimerTriggered += OnTimerTriggered;
             OPVM = _VM;
@@ -126,18 +135,40 @@ namespace CyberLab3.Pages
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
+            if(!osa.IsConnected)
             {
-                osa.Connect($"TCPIP0::{OPVM.IpAddress.Trim()}::inst0::INSTR");
-
-                if (osa.IsConnected)
+                await Task.Run(() =>
                 {
-                    string[] str = osa.Query(AnritsuMs9740AScpiCommands.IDENTIFICATION_QUERY).Split(',');
-                    osa.identity = str[0] + " " + str[1];
+                    try
+                    {
+                        osa.Connect($"TCPIP0::{OPVM.IpAddress.Trim()}::inst0::INSTR");
+                        if (osa.IsConnected)
+                        {
+                            string[] str = osa.Query(AnritsuMs9740AScpiCommands.IDENTIFICATION_QUERY).Split(',');
+                            osa.identity = str[0] + " " + str[1];
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Connection error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                });
+                if(osa.IsConnected)
+                {
+                    ConnectButton.Content = "Disconnect";
+                    DeviceTextBlock.Text = osa.identity;
                 }
-            });
-            DeviceTextBlock.Text = osa.identity;
-            //OPVM.LimitStr = $">{AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT]}";
+            }
+            else
+            {
+                osa.Disconnect();
+                if (!osa.IsConnected)
+                {
+                    osa.identity = "Not Connected";
+                    ConnectButton.Content = "Connect";
+                    DeviceTextBlock.Text = osa.identity;
+                }
+            }
         }
 
         private void ipAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -176,7 +207,7 @@ namespace CyberLab3.Pages
             prevMeasure = currentMeasure; // do przerobienia na prevMeasure = new Measurement(currentMeasure);
             await Task.Run(() =>
             {
-                osa.ReadSingle(currentMeasure, tracesTypes);
+                osa.ReadSingle(currentMeasure, tracesTypes, progressIndicator);
                 currentMeasure.Time = DateTime.Now;
             });
             foreach(var trace in currentMeasure.traces.Values)
@@ -297,7 +328,7 @@ namespace CyberLab3.Pages
                 await Task.Run(() =>
                 {
                     currentMeasure.Time = DateTime.Now;
-                    osa.ReadSingle(currentMeasure, tracesTypes);
+                    osa.ReadSingle(currentMeasure, tracesTypes, progressIndicator);
                     if(App.isThermalChamberActive)
                     {
                         currentMeasure.Temperature = App.globalTemperatureTC;
@@ -347,22 +378,7 @@ namespace CyberLab3.Pages
 
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (((ComboBoxItem)SaveComboBox2.SelectedItem)?.Content.ToString() == "database table")
-            {
-                using (var context = new DatabaseContext())
-                {
-                    var latest = context.Measurements
-                        .OrderByDescending(m => m.Id)
-                        .FirstOrDefault();
-                    if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
-                    context.Measurements.Add(currentMeasure);
-                    context.SaveChanges();
-                }
-            }
-            else
-            {
-                saveToCSV();
-            }
+            saveToCSV();
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -393,7 +409,7 @@ namespace CyberLab3.Pages
 
         private void saveToCSV()
         {
-            if (Directory.Exists($"./csv"))
+            if(csvFolderPath != defaultOsaFolderPath && Directory.Exists(csvFolderPath))
             {
                 var csv = new StringBuilder();
                 string newLine = string.Empty;
@@ -427,46 +443,101 @@ namespace CyberLab3.Pages
                     newLine = String.Join(';', stringList);
                     csv.AppendLine(newLine);
                 }
-                var FileName = $"./csv/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
+                var FileName = $"{csvFolderPath}/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
                 File.WriteAllText(FileName, csv.ToString());
             }
             else
             {
-                Directory.CreateDirectory($"./csv");
-                var csv = new StringBuilder();
-                string newLine = string.Empty;
-                newLine = $"Thermal Chamber Temperature; {currentMeasure.Temperature}";
-                csv.AppendLine(newLine);
-                List<string> stringList = new List<string>();
-                newLine = string.Empty;
-                stringList.Clear();
-                stringList.Add("Wavelength (nm)");
-                foreach (var trace in currentMeasure.traces.Values)
+                if (Directory.Exists(defaultOsaFolderPath))
                 {
-                    if (trace.type != TraceType.Blank)
-                    {
-                        stringList.Add(trace.name);
-                    }
-                }
-                newLine = String.Join(';', stringList);
-                csv.AppendLine(newLine);
-                for (int j = 0; j < currentMeasure.traces.First().Value.wavelengths.Count(); j++) //trace iteration
-                {
+                    var csv = new StringBuilder();
+                    string newLine = string.Empty;
+                    newLine = $"Thermal Chamber Temperature; {currentMeasure.Temperature}";
+                    csv.AppendLine(newLine);
+                    List<string> stringList = new List<string>();
                     newLine = string.Empty;
                     stringList.Clear();
-                    stringList.Add(currentMeasure.traces.First().Value.wavelengths[j].ToString());
+                    stringList.Add("Wavelength (nm)");
                     foreach (var trace in currentMeasure.traces.Values)
                     {
                         if (trace.type != TraceType.Blank)
                         {
-                            stringList.Add(trace.attenuationsRaw[j].ToString());
+                            stringList.Add(trace.name);
                         }
                     }
                     newLine = String.Join(';', stringList);
                     csv.AppendLine(newLine);
+                    for (int j = 0; j < currentMeasure.traces.First().Value.wavelengths.Count(); j++) //trace iteration
+                    {
+                        newLine = string.Empty;
+                        stringList.Clear();
+                        stringList.Add(currentMeasure.traces.First().Value.wavelengths[j].ToString());
+                        foreach (var trace in currentMeasure.traces.Values)
+                        {
+                            if (trace.type != TraceType.Blank)
+                            {
+                                stringList.Add(trace.attenuationsRaw[j].ToString());
+                            }
+                        }
+                        newLine = String.Join(';', stringList);
+                        csv.AppendLine(newLine);
+                    }
+                    var FileName = $"{defaultOsaFolderPath}/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
+                    File.WriteAllText(FileName, csv.ToString());
                 }
-                var FileName = $"./csv/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
-                File.WriteAllText(FileName, csv.ToString());
+                else
+                {
+                    Directory.CreateDirectory(defaultOsaFolderPath);
+                    var csv = new StringBuilder();
+                    string newLine = string.Empty;
+                    newLine = $"Thermal Chamber Temperature; {currentMeasure.Temperature}";
+                    csv.AppendLine(newLine);
+                    List<string> stringList = new List<string>();
+                    newLine = string.Empty;
+                    stringList.Clear();
+                    stringList.Add("Wavelength (nm)");
+                    foreach (var trace in currentMeasure.traces.Values)
+                    {
+                        if (trace.type != TraceType.Blank)
+                        {
+                            stringList.Add(trace.name);
+                        }
+                    }
+                    newLine = String.Join(';', stringList);
+                    csv.AppendLine(newLine);
+                    for (int j = 0; j < currentMeasure.traces.First().Value.wavelengths.Count(); j++) //trace iteration
+                    {
+                        newLine = string.Empty;
+                        stringList.Clear();
+                        stringList.Add(currentMeasure.traces.First().Value.wavelengths[j].ToString());
+                        foreach (var trace in currentMeasure.traces.Values)
+                        {
+                            if (trace.type != TraceType.Blank)
+                            {
+                                stringList.Add(trace.attenuationsRaw[j].ToString());
+                            }
+                        }
+                        newLine = String.Join(';', stringList);
+                        csv.AppendLine(newLine);
+                    }
+                    var FileName = $"{defaultOsaFolderPath}/OSA-{currentMeasure.Time.Day}-{currentMeasure.Time.Month}-{currentMeasure.Time.Year}_{currentMeasure.Time.Hour}-{currentMeasure.Time.Minute}-{currentMeasure.Time.Second}.csv";
+                    File.WriteAllText(FileName, csv.ToString());
+                }
+            }
+        }
+
+        private void saveSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var folderDialog = new OpenFolderDialog
+            {
+                Title = "Select Folder",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+            };
+
+            if (folderDialog.ShowDialog() == true)
+            {
+                var folderName = folderDialog.FolderName;
+                csvFolderPathTextBlock.Text = folderName;
             }
         }
     }

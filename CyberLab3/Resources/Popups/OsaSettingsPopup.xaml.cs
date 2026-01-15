@@ -37,7 +37,7 @@ namespace CyberLab3.Resources.Popups
             }
             PaTextBox.Text = osa.POINT_AVERAGE_COUNT.ToString();
             SaTextBox.Text = osa.SWEEP_AVERAGE_COUNT.ToString();
-            SmoothComboBox.SelectedItem = osa.SMOOTHING_ENABLED;
+            SmoothComboBox.SelectedValue = osa.SMOOTHING_ENABLED;
             foreach (ComboBoxItem item in SpComboBox.Items)
             {
                 if (item.Content.ToString() == osa.SAMPLING_POINTS_COUNT.ToString())
@@ -51,12 +51,14 @@ namespace CyberLab3.Resources.Popups
         private void applyButt_Click(object sender, RoutedEventArgs e)
         {
             osa.RESOLUTION_SETTING = (OSA.ResolutionSetting)ResComboBox.SelectedIndex;
-            osa.VBW_SETTING = (OSA.VbwSetting)VbwComboBox.SelectedIndex;
+            osa.VBW_SETTING = (OSA.VbwSetting)Enum.GetValues<OSA.VbwSetting>().GetValue(VbwComboBox.SelectedIndex);
             int.TryParse(PaTextBox.Text, out var paInt);
             osa.POINT_AVERAGE_COUNT = paInt;
             int.TryParse(SaTextBox.Text, out var saInt);
             osa.SWEEP_AVERAGE_COUNT = saInt;
             osa.SMOOTHING_ENABLED = SmoothComboBox.Text;
+            int.TryParse(SpComboBox.Text, out var spInt);
+            osa.SAMPLING_POINTS_COUNT = spInt;
             string str = string.Empty;
             switch(osa.RESOLUTION_SETTING.ToString())
             {

@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
 namespace CyberLab3.Resources.Libraries
@@ -249,11 +250,15 @@ namespace CyberLab3.Resources.Libraries
                     }
                     IsConnected = true;
                 }
-                if(IsConnected) ReadParameters();
+                else
+                {
+                    throw new Exception($"\"Unable to connect\"");
+                }
+                if (IsConnected) ReadParameters();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Wykryto niespodziewany błąd : {0} podczas łączenia z {1}", e.ToString(), ip);
+                throw new Exception($"Wykryto niespodziewany błąd : {e.Message} podczas łączenia z {ip2}");
             }
         }
 
@@ -270,7 +275,7 @@ namespace CyberLab3.Resources.Libraries
             try
             {
                 // Prawidłowym sposobem zamknięcia sesji jest użycie metody Dispose()
-                Task.Run(() => mbSession.Dispose());
+                if(mbSession!= null) _ = Task.Run(() => mbSession.Dispose());
                 Console.WriteLine("Rozłączono.");
             }
             catch (Exception ex)
@@ -477,18 +482,21 @@ namespace CyberLab3.Resources.Libraries
             }
             return xs;
         }
-        public void ReadSingle(Measurement measurement, Dictionary<string, TraceType> types)
+        public void ReadSingle(Measurement measurement, Dictionary<string, TraceType> types, IProgress<int> progress)
         {
             bool ready = false;
             try
             {
                 Write(AnritsuMs9740AScpiCommands.SINGLE_SWEEP);
                 Write("*CLS");
+                progress.Report(10);
                 ready = WaitForEndOfOperation();
+                progress.Report(50);
                 string result;
                 List<double> Xs = new List<double>();
                 Xs = generateXS(this.CENTER_WAVELENGTH_nm, this.SPAN_WAVELENGTH_nm, this.SAMPLING_POINTS_COUNT);
-                foreach(var trace in measurement.traces.Values)
+                progress.Report(60);
+                foreach (var trace in measurement.traces.Values)
                 {
                     result = "";
                     if(trace.name != null)
@@ -557,6 +565,7 @@ namespace CyberLab3.Resources.Libraries
                             }
                             trace.SetData(x, y);
                         }
+                        progress.Report(100);
                     }
                 }
             }

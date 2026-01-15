@@ -57,7 +57,7 @@
                 </UniformGrid>
                 <UniformGrid Columns="2">
                     <Label Content="Smooth (-)"/>
-                    <ComboBox x:Name="SmoothComboBox" VerticalAlignment="Center">
+                    <ComboBox x:Name="SmoothComboBox" VerticalAlignment="Center" SelectedValuePath="Content">
                         <ComboBoxItem>OFF</ComboBoxItem>
                         <ComboBoxItem>3</ComboBoxItem>
                         <ComboBoxItem>5</ComboBoxItem>

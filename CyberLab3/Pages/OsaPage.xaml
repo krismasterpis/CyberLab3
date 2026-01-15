@@ -50,6 +50,7 @@
                         <Label Content="IpAddress" HorizontalAlignment="Center"/>
                         <TextBox x:Name="ipAddressTextBox" Text="{Binding IpAddress}" TextAlignment="Center" Margin="0,5,0,0" TextChanged="ipAddressTextBox_TextChanged"/>
                     </UniformGrid>
+                    <Button x:Name="settingsButton" Content="OSA measurements settings" Margin="0,5,0,0" Click="settingsButton_Click"/>
                 </StackPanel>
             </Border>
             <Grid>
@@ -103,26 +104,39 @@
                 </Grid>
                 <Border Grid.Row="1" Grid.Column="0" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">
                     <StackPanel Orientation="Vertical">
-                        <UniformGrid Columns="3">
-                            <Button x:Name="SingleButton" Content="Single" Margin="0,0,5,0" Click="SingleButton_Click"/>
-                        </UniformGrid>
-                        <UniformGrid Columns="5">
-                            <Button x:Name="LiveButton" Content="Live" Margin="5,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
-                            <Button x:Name="LoopButton" Content="Loop" Margin="5,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
-                            <Button x:Name="StopButton" Content="Stop" Margin="5,0,0,0" Click="StopButton_Click"  IsEnabled="{Binding IsRepeatEnabled}"/>
-                            <TextBlock Text="{Binding LimitStr, StringFormat=Interval (s)&gt;\{0\}}" Margin="0,5,5,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="IntervalTextBox" Margin="5,5,0,0" PreviewTextInput="IntervalTextBox_PreviewTextInput"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="SingleButton" Grid.Column="0" Content="Single" Margin="0,0,5,0" Click="SingleButton_Click"/>
+                            <ProgressBar x:Name="MeasurementProgressBar" Grid.Column="1" Grid.ColumnSpan="2" Value="0" Maximum="100"/>
+                        </Grid>
+                        <UniformGrid Columns="5" Margin="0,5,0,0">
+                            <Button x:Name="LiveButton" Content="Live" Margin="0,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="LoopButton" Content="Loop" Margin="0,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="StopButton" Content="Stop" Margin="0,0,5,0" Click="StopButton_Click"  IsEnabled="{Binding IsRepeatEnabled}"/>
+                            <TextBlock Text="{Binding LimitStr, StringFormat=Interval (s)&gt;\{0\}}" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="IntervalTextBox" PreviewTextInput="IntervalTextBox_PreviewTextInput" VerticalAlignment="Center"/>
                         </UniformGrid>
                         <Button Content="Clear all" Margin="0,5,0,0"/>
-                        <UniformGrid Columns="3" Margin="0,5,0,0">
-                            <Button x:Name="saveButton" Content="Save all" Click="saveButton_Click"/>
-                            <TextBlock Text="Save to" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
-                            <ComboBox x:Name="SaveComboBox2" SelectedIndex="0">
-                                <ComboBoxItem Content="database table"/>
-                                <ComboBoxItem Content=".csv files"/>
-                            </ComboBox>
-                        </UniformGrid>
-                        <Button x:Name="settingsButton" Content="Settings" Margin="0,5,0,0" Click="settingsButton_Click"/>
+                        <Grid Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width=".5*"/>
+                                <ColumnDefinition Width=".2*"/>
+                                <ColumnDefinition Width=".4*"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="saveButton" Content="Save all" Click="saveButton_Click"/>
+                            <Button x:Name="saveSettingsButton" Grid.Column="1" BorderThickness="0" Click="saveSettingsButton_Click" Background="{StaticResource DarkBackgroundBrush}">
+                                <Viewbox Width="16">
+                                    <Path Data="{StaticResource IconSettings}" Fill="#7b8792"/>
+                                </Viewbox>
+                            </Button>
+                            <TextBlock Grid.Column="2" Text="Save to:" HorizontalAlignment="Left" FontWeight="Bold" FontSize="16" Foreground="#6b8094"/>
+                            <TextBlock x:Name="csvFolderPathTextBlock" Grid.Column="3" Text="./csv" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Foreground="#6b8094"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
                 <GroupBox Grid.Row="2" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" Padding="16">

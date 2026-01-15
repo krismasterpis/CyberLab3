@@ -42,11 +42,11 @@ namespace CyberLab3.Resources.Controls
 
         public string NavName
         {
-            get { return (string)GetValue(MyPropertyProperty); }
-            set { SetValue(MyPropertyProperty, value); }
+            get { return (string)GetValue(NavNameProperty); }
+            set { SetValue(NavNameProperty, value); }
         }
 
-        public static readonly DependencyProperty MyPropertyProperty = DependencyProperty.Register("MyProperty", typeof(string), typeof(NavButton), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty NavNameProperty = DependencyProperty.Register("NavName", typeof(string), typeof(NavButton), new PropertyMetadata(string.Empty));
 
 
     }

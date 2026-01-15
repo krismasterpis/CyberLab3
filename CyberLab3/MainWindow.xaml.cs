@@ -123,7 +123,6 @@ namespace CyberLab3
                         break;
                 }
                 //navFrame.Navigate(selected.NavLink);
-                navInfoBar.Text = selected.NavName;
             }
         }
     }

@@ -15,9 +15,9 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="70"/>
         </Grid.RowDefinitions>
-        <ListBox x:Name="IconTilesListBox" Grid.Row="1" Grid.Column="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseMove="ListBox_PreviewMouseMove">
+        <ListBox x:Name="IconTilesListBox" Grid.Row="1" Grid.Column="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseMove="ListBox_PreviewMouseMove" BorderThickness="0">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}">
                     <Setter Property="Template">
