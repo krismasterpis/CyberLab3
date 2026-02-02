@@ -1,4 +1,5 @@
-﻿using CyberLab3.ViewModels;
+﻿using CyberLab3.Resources.Nodes;
+using CyberLab3.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace CyberLab3.Pages
         {
             InitializeComponent();
             CLVM = _viewModel;
-            DataContext = CLVM;
+            DataContext = new EditorViewModel();
         }
     }
 }

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="IviFoundation.Visa" Version="8.0.2" />
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
@@ -19,6 +20,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3351.48" />
     <PackageReference Include="NationalInstruments.Visa" Version="25.3.0.11" />
+    <PackageReference Include="Nodify" Version="7.1.0" />
     <PackageReference Include="ScottPlot.WPF" Version="5.0.55" />
     <PackageReference Include="ScpiNet" Version="1.2.0" />
   </ItemGroup>

@@ -10,10 +10,68 @@
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width=".2*"/>
+            <ColumnDefinition Width=".8*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition/>
+            <RowDefinition Height="75"/>
         </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                <GroupBox.Header>
+                    <Label Content="Connection" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <Button x:Name="ConnectButt" Content="Connect" Click="ConnectButt_Click"/>
+                    <UniformGrid Columns="2" Margin="0,5,0,0">
+                        <TextBlock Text="Ip address" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                        <TextBox x:Name="IpTextBox"/>
+                    </UniformGrid>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="Devices" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <ListView x:Name="DeviceList">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Slot" DisplayMemberBinding="{Binding Key}" Width="50"/>
+                                <GridViewColumn Header="Module Name" DisplayMemberBinding="{Binding Value}" Width="200"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group2" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group3" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group4" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+        <Border Grid.Column="1" Grid.Row="0" Margin="10" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}">
+            
+        </Border>
     </Grid>
 </Page>

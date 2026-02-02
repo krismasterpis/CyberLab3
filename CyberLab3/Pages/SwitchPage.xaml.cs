@@ -1,6 +1,9 @@
-﻿using System;
+﻿using CyberLab3.Resources.Libraries;
+using CyberLab3.Resources.Nodes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,11 +24,26 @@ namespace CyberLab3.Pages
     public partial class SwitchPage : Page
     {
         SwitchPageViewModel SPVM;
+        EXFO_LTB8 LTB8;
         public SwitchPage(SwitchPageViewModel _VM)
         {
             InitializeComponent();
             SPVM = _VM;
             DataContext = SPVM;
+        }
+
+        private void ConnectButt_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LTB8 = new EXFO_LTB8(IpTextBox.Text.ToString());
+                LTB8.Connect();
+                DeviceList.ItemsSource = LTB8.InstrumentCatalog;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Connection failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

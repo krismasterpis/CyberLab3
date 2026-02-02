@@ -4,16 +4,146 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:CyberLab3.Pages"
+      xmlns:nodify="clr-namespace:Nodify;assembly=Nodify"
+      xmlns:nodes="clr-namespace:CyberLab3.Resources.Nodes"
       mc:Ignorable="d" 
       d:DesignHeight="1079" d:DesignWidth="1870"
       Title="CyberLabPage" KeepAlive="True">
 
+    <Page.Resources>
+        <GeometryDrawing x:Key="SmallGridGeometry"
+                        Geometry="M0,0 L0,1 0.03,1 0.03,0.03 1,0.03 1,0 Z"
+                        Brush="{StaticResource NodifyEditor.SelectionRectangleBackgroundBrush}" />
+
+        <GeometryDrawing x:Key="LargeGridGeometry"
+                        Geometry="M0,0 L0,1 0.015,1 0.015,0.015 1,0.015 1,0 Z"
+                        Brush="{StaticResource NodifyEditor.SelectionRectangleBackgroundBrush}" />
+
+        <DrawingBrush x:Key="SmallGridLinesDrawingBrush"
+                    TileMode="Tile"
+                    ViewportUnits="Absolute"
+                    Viewport="0 0 20 20"
+                    Transform="{Binding ViewportTransform, ElementName=Editor}"
+                    Drawing="{StaticResource SmallGridGeometry}" />
+
+        <DrawingBrush x:Key="LargeGridLinesDrawingBrush"
+                    TileMode="Tile"
+                    ViewportUnits="Absolute"
+                    Opacity="0.5"
+                    Viewport="0 0 100 100"
+                    Transform="{Binding ViewportTransform, ElementName=Editor}"
+                    Drawing="{StaticResource LargeGridGeometry}" />
+    </Page.Resources>
+    
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width=".2*"/>
+            <ColumnDefinition Width=".8*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition/>
+            <RowDefinition Height="75"/>
         </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                <GroupBox.Header>
+                    <Label Content="group0" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel>
+
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group1" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group2" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group3" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5">
+                <GroupBox.Header>
+                    <Label Content="group4" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+        <Border Grid.Column="1" Grid.Row="0" Margin="10" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}">
+            <nodify:NodifyEditor
+             ItemsSource="{Binding Nodes}"
+             Connections="{Binding Connections}"
+             PendingConnection="{Binding PendingConnection}"
+             DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
+             Background="{StaticResource SmallGridLinesDrawingBrush}">
+
+                <nodify:NodifyEditor.DataContext>
+                    <nodes:EditorViewModel/>
+                </nodify:NodifyEditor.DataContext>
+
+                <nodify:NodifyEditor.PendingConnectionTemplate>
+                    <DataTemplate DataType="{x:Type nodes:PendingConnectionViewModel}">
+                        <nodify:PendingConnection StartedCommand="{Binding StartCommand}"
+                                      CompletedCommand="{Binding FinishCommand}"
+                                      AllowOnlyConnectors="True" />
+                    </DataTemplate>
+                </nodify:NodifyEditor.PendingConnectionTemplate>
+
+                <nodify:NodifyEditor.ConnectionTemplate>
+                    <DataTemplate DataType="{x:Type nodes:ConnectionViewModel}">
+                        <nodify:LineConnection Source="{Binding Source.Anchor}"
+                                   Target="{Binding Target.Anchor}" />
+                    </DataTemplate>
+                </nodify:NodifyEditor.ConnectionTemplate>
+
+                <nodify:NodifyEditor.ItemContainerStyle>
+                    <Style TargetType="{x:Type nodify:ItemContainer}">
+                        <Setter Property="Location"
+                                Value="{Binding Location}" />
+                    </Style>
+                </nodify:NodifyEditor.ItemContainerStyle>
+
+                <nodify:NodifyEditor.ItemTemplate>
+                    <DataTemplate DataType="{x:Type nodes:BaseNodeViewModel}">
+                        <nodify:Node Header="{Binding Title}"
+                             Input="{Binding Input}"
+                             Output="{Binding Output}">
+                            <nodify:Node.InputConnectorTemplate>
+                                <DataTemplate DataType="{x:Type nodes:ConnectorViewModel}">
+                                    <nodify:NodeInput Header="{Binding Title}"
+                                                      Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                                      IsConnected="{Binding IsConnected}"/>
+                                </DataTemplate>
+                            </nodify:Node.InputConnectorTemplate>
+
+                            <nodify:Node.OutputConnectorTemplate>
+                                <DataTemplate DataType="{x:Type nodes:ConnectorViewModel}">
+                                    <nodify:NodeOutput Header="{Binding Type}"
+                                                       Anchor="{Binding Anchor, Mode=OneWayToSource}"  
+                                                       IsConnected="{Binding IsConnected}"/>
+                                </DataTemplate>
+                            </nodify:Node.OutputConnectorTemplate>
+                        </nodify:Node>
+                    </DataTemplate>
+                </nodify:NodifyEditor.ItemTemplate>
+            </nodify:NodifyEditor>
+        </Border>
     </Grid>
 </Page>
