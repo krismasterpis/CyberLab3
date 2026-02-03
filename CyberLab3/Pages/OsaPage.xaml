@@ -114,9 +114,9 @@
                             <ProgressBar x:Name="MeasurementProgressBar" Grid.Column="1" Grid.ColumnSpan="2" Value="0" Maximum="100"/>
                         </Grid>
                         <UniformGrid Columns="5" Margin="0,5,0,0">
-                            <Button x:Name="LiveButton" Content="Live" Margin="0,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
-                            <Button x:Name="LoopButton" Content="Loop" Margin="0,0,5,0" Click="RepeatButton_Click" IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
-                            <Button x:Name="StopButton" Content="Stop" Margin="0,0,5,0" Click="StopButton_Click"  IsEnabled="{Binding IsRepeatEnabled}"/>
+                            <Button x:Name="LiveButton" Content="Live" Margin="0,0,5,0" Click="LiveButton_Click"/>
+                            <Button x:Name="LoopButton" Content="Loop" Margin="0,0,5,0" Click="LoopButton_Click"  IsEnabled="{Binding ElementName=IntervalTextBox, Path=Text.Length, Mode=OneWay}"/>
+                            <Button x:Name="StopButton" Content="Stop" Margin="0,0,5,0" Click="StopButton_Click"/>
                             <TextBlock Text="{Binding LimitStr, StringFormat=Interval (s)&gt;\{0\}}" Margin="0,0,5,0" HorizontalAlignment="Right"/>
                             <TextBox x:Name="IntervalTextBox" PreviewTextInput="IntervalTextBox_PreviewTextInput" VerticalAlignment="Center"/>
                         </UniformGrid>

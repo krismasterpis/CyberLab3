@@ -66,6 +66,11 @@ namespace CyberLab3.Pages
         Progress<int> progressIndicator;
         string csvFolderPath;
         const string defaultOsaFolderPath = "./csv/OSA";
+
+        private CancellationTokenSource _cts;
+        private Task _workerTask;
+        public bool IsBGTaskRunning => _workerTask != null && !_workerTask.IsCompleted;
+
         public OsaPage(OsaPageViewModel _VM, DatabaseContext db)
         {
             InitializeComponent();
@@ -289,31 +294,6 @@ namespace CyberLab3.Pages
                 OPVM.OSAplot.Plot.Axes.AutoScale();
             }
         }
-
-        private void RepeatButton_Click(object sender, RoutedEventArgs e)
-        {
-            if(!IntervalTextBox.IsEnabled)
-            {
-                OPVM.LocalTimer.Stop();
-                IntervalTextBox.IsEnabled = true;
-            }
-            else
-            {
-                var interv = long.Parse(IntervalTextBox.Text);
-                var limit = AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT];
-                if (interv > 0 && interv > limit)
-                {
-                    OPVM.LocalTimer = new LocalTimer(interv, LocalTimerElapsed);
-                    OPVM.LocalTimer.Reset();
-                    OPVM.LocalTimer.Start();
-                    IntervalTextBox.IsEnabled = false;
-                }
-                else
-                {
-                    IntervalTextBox.Text = null;
-                }
-            }
-        }
         private void OnTimerTriggered()
         {
             // tu można wstawić dowolny kod np. odświeżenie danych
@@ -383,7 +363,7 @@ namespace CyberLab3.Pages
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-
+            _cts?.Cancel();
         }
 
         private void settingsButton_Click(object sender, RoutedEventArgs e)
@@ -538,6 +518,88 @@ namespace CyberLab3.Pages
             {
                 var folderName = folderDialog.FolderName;
                 csvFolderPathTextBlock.Text = folderName;
+            }
+        }
+
+        private void LoopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IntervalTextBox.IsEnabled)
+            {
+                OPVM.LocalTimer.Stop();
+                IntervalTextBox.IsEnabled = true;
+            }
+            else
+            {
+                var interv = long.Parse(IntervalTextBox.Text);
+                var limit = AnritsuMs9740ATimeConsts.VBWcoeff[(int)osa.VBW_SETTING] * AnritsuMs9740ATimeConsts.SamplingPointsCoeff[osa.SAMPLING_POINTS_COUNT];
+                if (interv > 0 && interv > limit)
+                {
+                    OPVM.LocalTimer = new LocalTimer(interv, LocalTimerElapsed);
+                    OPVM.LocalTimer.Reset();
+                    OPVM.LocalTimer.Start();
+                    IntervalTextBox.IsEnabled = false;
+                }
+                else
+                {
+                    IntervalTextBox.Text = null;
+                }
+            }
+        }
+
+        private void LiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsBGTaskRunning) return; // Zabezpieczenie przed podwójnym startem
+
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            // Uruchomienie zadania na osobny wątku (ThreadPool)
+            _workerTask = Task.Run(async () =>
+            {
+                await BackgroundLoop(token);
+            }, token);
+        }
+
+        private async Task BackgroundLoop(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    // 1. Wykonaj swoją funkcję
+                    stopWatch.Restart();
+                    prevMeasure = currentMeasure; // do przerobienia na prevMeasure = new Measurement(currentMeasure);
+                    osa.ReadSingle(currentMeasure, tracesTypes, progressIndicator);
+                    currentMeasure.Time = DateTime.Now;
+                    foreach (var trace in currentMeasure.traces.Values)
+                    {
+                        scattersXs[trace.name].Clear();
+                        scattersXs[trace.name].AddRange(trace.wavelengths);
+                        scattersYs[trace.name].Clear();
+                        scattersYs[trace.name].AddRange(trace.attenuationsRaw);
+                    }
+                    this.Dispatcher.InvokeAsync(() =>
+                    {
+                        OPVM.OSAplot.Refresh();
+                        OPVM.OSAplot.Plot.Axes.AutoScale();
+                        stopWatch.Stop();
+                        OPVM.ElapsedMs = stopWatch.ElapsedMilliseconds;
+                        if (OPVM.LocalTimer != null) ElapsedTimeTextBlock.Foreground = OPVM.ElapsedMs < OPVM.LocalTimer.Interval * 1000 ? Brushes.Green : Brushes.Red;
+                        else ElapsedTimeTextBlock.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 42, 132, 241));
+                    });
+                    // 2. Odczekaj określony czas (np. 1 sekunda)
+                    // Używamy Task.Delay zamiast Thread.Sleep, żeby nie blokować wątku
+                    await Task.Delay(1000, token);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Normalne zakończenie przy anulowaniu (Stop)
+            }
+            catch (Exception ex)
+            {
+                // Logowanie błędów, żeby wątek nie "zginął po cichu"
+                Debug.WriteLine($"Błąd w pętli tła: {ex.Message}");
             }
         }
     }

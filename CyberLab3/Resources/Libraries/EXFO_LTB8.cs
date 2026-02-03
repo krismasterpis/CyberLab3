@@ -66,7 +66,7 @@ namespace CyberLab3.Resources.Libraries
         /// Sends a SCPI command to the device. 
         /// Most devices require a newline character (\n) at the end.
         /// </summary>
-        private void SendCommand(string command)
+        public void SendCommand(string command)
         {
             if (_stream == null) throw new InvalidOperationException("Not connected.");
 
@@ -77,7 +77,7 @@ namespace CyberLab3.Resources.Libraries
         /// <summary>
         /// Sends a query and waits for the response string.
         /// </summary>
-        private string Query(string query)
+        public string Query(string query)
         {
             SendCommand(query);
 
