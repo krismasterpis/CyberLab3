@@ -26,6 +26,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static ScottPlot.Generate;
 
 namespace CyberLab3.Pages
 {
@@ -54,12 +55,16 @@ namespace CyberLab3.Pages
         private HorizontalLine tauLine;
         private Scatter errorScatter;
 
+        private SemaphoreSlim _sem1 = new SemaphoreSlim(1, 1);
+
         int currentSetPointIndex = 0;
         int localSetPoint = -100;
         int intResult;
         string tempType = "Idle";
         bool measurementFailed = false;
         bool measurementEnabled = false;
+
+        string defaultAutosaveFolderPath = "./temperature_autosave";
         public ThermalChamberPage(ThermalChamberViewModel _VM, OsaPageViewModel _OPVM)
         {
             InitializeComponent();
@@ -99,6 +104,7 @@ namespace CyberLab3.Pages
             TCVM.MainPlot.Refresh();
             TCVM.SetPointsPlot.Refresh();
             TCVM.LocalTimer = new LocalTimer(TCVM.Interval, LocalTimerElapsed);
+            TCVM.LocalTimer3 = new LocalTimer(300, LocalTimer3Elapsed);
             ipTextBox.Text = "172.16.2.217";
         }
         private async void ConnectButt_Click(object sender, RoutedEventArgs e)
@@ -192,49 +198,103 @@ namespace CyberLab3.Pages
         }
         private async void LocalTimerElapsed(object? sender, EventArgs e)
         {
-            if (TCVM.LocalTimer != null)
+            if (TCVM.LocalTimer == null) return;
+            
+            _ = RunMeasurementCycleAsync();
+        }
+        private async Task RunMeasurementCycleAsync()
+        {
+            if (!await _sem1.WaitAsync(0))
             {
-                await Task.Run(() =>
+                Debug.WriteLine("Poprzedni pomiar trwa zbyt długo (powyżej 1s). Pomijam ten cykl.");
+                return;
+            }
+
+            try
+            {
+                await Task.Run(async () =>
                 {
-                    sw.Restart();
+                    var localSw = Stopwatch.StartNew();
+
                     try
                     {
                         ReadTemperature();
-                        if(measurementFailed)
-                        {
-                            errorX.Add(temperatureX.Last());
-                            errorY.Add(temperatureY.Last());
-                            measurementFailed = false;
-                        }
-                        if (!TC.checkIfConnected())
-                        {
-                            TC.Connect();
-                        }
+                        if (!TC.checkIfConnected()) TC.Connect();
+                        measurementFailed = false;
                     }
                     catch (Exception ex)
                     {
                         Debug.WriteLine(ex.Message);
-                        TCVM.MeasurementFails += 1;
                         measurementFailed = true;
                     }
-                    sw.Stop();
-                    if (measurementEnabled && temperatureSetpoints.Count > 0 && currentSetPointIndex <= temperatureSetpoints.Count() - 1)
+
+                    // --- Twoja pętla retry (może trwać np. 300-400ms) ---
+                    int count = 0;
+                    while (measurementFailed && count < 3)
                     {
-                        if (temperatureSetpoints[currentSetPointIndex].timeConstS_cool > 0 || temperatureSetpoints[currentSetPointIndex].timeConstS_heat > 0)
+                        try
                         {
-                            //tu zrobić zliczane tau
+                            if (!TC.checkIfConnected())
+                                TC.Connect();
+                            else
+                                ReadTemperature();
+
+                            measurementFailed = false;
                         }
-                        if ((tempType == "Cooling" && TCVM.CurrTemperature <= tauLine.Y) || (tempType == "Heating" && TCVM.CurrTemperature >= tauLine.Y) || (TCVM.CurrTemperature > (TCVM.CurrSetPoint-0.4) && TCVM.CurrTemperature < (TCVM.CurrSetPoint+0.4)))
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message + $" Count:{count}");
+                            measurementFailed = true;
+                        }
+
+                        count++;
+                        await Task.Delay(100); // To opóźnienie jest bezpieczne wewnątrz Task.Run
+                    }
+                    // -----------------------------------------------------
+
+                    if (measurementFailed)
+                    {
+                        if (temperatureX.Any())
+                        {
+                            errorX.Add(temperatureX.Last());
+                            errorY.Add(temperatureY.Last());
+                        }
+                        TCVM.MeasurementFails += 1;
+                        measurementFailed = false;
+                    }
+
+                    localSw.Stop();
+
+                    // Logika Setpointów i Tau
+                    if (measurementEnabled && temperatureSetpoints.Any() && currentSetPointIndex < temperatureSetpoints.Count)
+                    {
+                        bool coolingOk = tempType == "Cooling" && TCVM.CurrTemperature <= tauLine.Y;
+                        bool heatingOk = tempType == "Heating" && TCVM.CurrTemperature >= tauLine.Y;
+                        bool rangeOk = TCVM.CurrTemperature > (TCVM.CurrSetPoint - 0.4) && TCVM.CurrTemperature < (TCVM.CurrSetPoint + 0.4);
+
+                        if (coolingOk || heatingOk || rangeOk)
                         {
                             TCVM.LocalTimer2.Start();
                         }
                     }
-                    elapsedMSList.Add((int)sw.ElapsedMilliseconds);
+
+                    elapsedMSList.Add((int)localSw.ElapsedMilliseconds);
                     TCVM.ElapsedMsAvg = elapsedMSList.Average();
-                    TCVM.ElapsedMs = sw.ElapsedMilliseconds;
+                    TCVM.ElapsedMs = localSw.ElapsedMilliseconds;
                 });
-                TCVM.MainPlot.Plot.Axes.AutoScale();
-                TCVM.MainPlot.Refresh();
+                Dispatcher.Invoke(() =>
+                {
+                    TCVM.MainPlot.Plot.Axes.AutoScale();
+                    TCVM.MainPlot.Refresh();
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Krytyczny błąd w pętli pomiarowej: {ex.Message}");
+            }
+            finally
+            {
+                _sem1.Release();
             }
         }
         private async void LocalTimerElapsed2(object? sender, EventArgs e)
@@ -505,7 +565,9 @@ namespace CyberLab3.Pages
         {
             var dialog = new OpenFolderDialog();
             dialog.Title = "Choose destination folder";
-            var dateTime = DateTime.Now;
+            var dateTime = System.DateTime.Now;
+            List<float> tempX = new List<float>(temperatureX);
+            List<float> tempY = new List<float>(temperatureY);
             if (dialog.ShowDialog() == true)
             {
                 string folderPath = dialog.FolderName;
@@ -516,18 +578,69 @@ namespace CyberLab3.Pages
                     newLine = $"Time (s); Temperature (°C)";
                     csv.AppendLine(newLine);
                     List<string> stringList = new List<string>();
-                    for (int i = 0; i < temperatureX.Count(); i++)
+                    for (int i = 0; i < tempX.Count(); i++)
                     {
                         newLine = string.Empty;
                         stringList.Clear();
-                        stringList.Add(temperatureX[i].ToString());
-                        stringList.Add(temperatureY[i].ToString());
+                        stringList.Add(tempX[i].ToString());
+                        stringList.Add(tempY[i].ToString());
                         newLine = String.Join(';', stringList);
                         csv.AppendLine(newLine);
                     }
                     var FileName = $"{folderPath}/Temperature-{dateTime.Day}-{dateTime.Month}-{dateTime.Year}_{dateTime.Hour}-{dateTime.Minute}-{dateTime.Second}.csv";
                     File.WriteAllText(FileName, csv.ToString());
                 }
+            }
+        }
+        private async void LocalTimer3Elapsed(object? sender, EventArgs e)
+        {
+            if (TCVM.LocalTimer3 != null)
+            {
+                List<float> tempX = new List<float>(temperatureX);
+                List<float> tempY = new List<float>(temperatureY);
+                await Task.Run(() =>
+                {
+                    var dateTime = System.DateTime.Now;
+                    var csv = new StringBuilder();
+                    string newLine = string.Empty;
+                    newLine = $"Time (s); Temperature (°C)";
+                    csv.AppendLine(newLine);
+                    List<string> stringList = new List<string>();
+                    for (int i = 0; i < tempX.Count(); i++)
+                    {
+                        newLine = string.Empty;
+                        stringList.Clear();
+                        stringList.Add(tempX[i].ToString());
+                        stringList.Add(tempY[i].ToString());
+                        newLine = String.Join(';', stringList);
+                        csv.AppendLine(newLine);
+                    }
+                    if(!Directory.Exists(defaultAutosaveFolderPath))
+                    {
+                        Directory.CreateDirectory(defaultAutosaveFolderPath);
+                    }
+                    var FileName = defaultAutosaveFolderPath +$"/Temperature-{dateTime.Day}-{dateTime.Month}-{dateTime.Year}_{dateTime.Hour}-{dateTime.Minute}-{dateTime.Second}.csv";
+                    File.WriteAllText(FileName, csv.ToString());
+                });
+            }
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AutosaveCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if(TCVM.IsAutosaveEnabled)
+            {
+                TCVM.LocalTimer3.Start();
+                AutosaveTextBlock.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                TCVM.LocalTimer3.Stop();
+                AutosaveTextBlock.Visibility = Visibility.Hidden;
             }
         }
     }

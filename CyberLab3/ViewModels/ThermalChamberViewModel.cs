@@ -22,6 +22,9 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
     private LocalTimer _localTimer2;
     private TimeSpan _localEstTime2;
     private TimeSpan _localTime2;
+    private LocalTimer _localTimer3;
+    private TimeSpan _localEstTime3;
+    private TimeSpan _localTime3;
     private long _elapsedMs;
     private double _elapsedMsAvg;
     private long _measurementFails;
@@ -36,6 +39,7 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
     private int _interval = 1;
     private bool _loopMode = false;
     private bool _reverseMode = false;
+    private bool _isAutosaveEnabled = false;
     public int Interval
     {
         get => _interval;
@@ -203,6 +207,18 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
             }
         }
     }
+    public bool IsAutosaveEnabled
+    {
+        get => _isAutosaveEnabled;
+        set
+        {
+            if (_isAutosaveEnabled != value)
+            {
+                _isAutosaveEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public TimeSpan LocalEstTime
     {
         get => _localEstTime;
@@ -247,6 +263,19 @@ public class ThermalChamberViewModel : INotifyPropertyChanged
             if (_localTimer2 != value)
             {
                 _localTimer2 = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public LocalTimer LocalTimer3
+    {
+        get => _localTimer3;
+        set
+        {
+            if (_localTimer3 != value)
+            {
+                _localTimer3 = value;
                 OnPropertyChanged();
             }
         }

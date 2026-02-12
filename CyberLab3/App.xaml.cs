@@ -11,6 +11,7 @@ namespace CyberLab3
     /// </summary>
     public partial class App : Application
     {
+        public bool IsDebugEnabled = false;
         public static bool isThermalChamberActive = false;
         public static double globalTemperatureTC = -100;
         public TimerEventService TimerService { get; } = new TimerEventService();

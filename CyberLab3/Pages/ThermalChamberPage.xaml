@@ -22,6 +22,7 @@
             <Border  CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="10">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="{Binding LocalTimer2.Time, StringFormat=Next \setpoint \in: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
+                    <TextBlock x:Name="AutosaveTextBlock" Text="{Binding LocalTimer3.Time, StringFormat=Autosave \in: \{0\}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{StaticResource LabelBlueBrush}"/>
                 </StackPanel>
             </Border>
             <Border  CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}" Margin="10,5,10,5" VerticalAlignment="Stretch" Padding="10">
@@ -46,7 +47,14 @@
                 <RowDefinition Height=".65*"/>
             </Grid.RowDefinitions>
             <Border Grid.Row="0" Margin="5" CornerRadius="16" Background="{StaticResource DarkBackgroundBrush}">
-                <ContentControl Content="{Binding SetPointsPlot, Mode=OneTime}" Margin="5"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height=".1*"/>
+                    </Grid.RowDefinitions>
+                    <ContentControl Content="{Binding SetPointsPlot, Mode=OneTime}" Margin="5" Grid.Row="0"/>
+                    <Button x:Name="DefineSetpointButt" Grid.Row="1" Content="Define Setpoints" Margin="50,0,50,5" Click="DefineSetpointButt_Click" Height="20"/>
+                </Grid>
             </Border>
             <StackPanel Grid.Row="1">
                 <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
@@ -75,19 +83,23 @@
                             <TextBox x:Name="SetPointTextBox" TextChanged="SetPointTextBox_TextChanged"/>
                         </UniformGrid>
                         <Button x:Name="StartButt" Content="START Cycle" Margin="0,5,0,0"  Click="StartButt_Click" IsEnabled="{Binding IsSetpointsSetted}"/>
-                        <UniformGrid Columns="2" Margin="0,5,0,0">
-                            <Button x:Name="DefineSetpointButt" Content="Define Setpoints" Margin="0,0,5,0" Click="DefineSetpointButt_Click"/>
-                            <TextBlock Text="Estimated time:" VerticalAlignment="Center"/>
-                        </UniformGrid>
                         <Button x:Name="IntervalChangeButt" Content="Change Interval" Margin="0,5,0,0" Click="IntervalChangeButt_Click" IsEnabled="{Binding IsIntervalSetted}"/>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
                             <TextBlock Text="{Binding Interval, StringFormat=Interval {0} (s)}" HorizontalAlignment="Right" Margin="0,0,5,0"/>
                             <TextBox x:Name="IntervalTextBox" IsEnabled="{Binding IsConnected}" TextChanged="IntervalTextBox_TextChanged"/>
                         </UniformGrid>
                         <UniformGrid Columns="2" Margin="0,5,0,0">
-                            <Button x:Name="ClearButton" Content="Clear Plot" Margin="0,0,5,0" Click="ClearButton_Click"/>
                             <Button x:Name="SaveButton" Content="Save All" Margin="0,0,5,0" Click="SaveButton_Click"/>
+                            <CheckBox x:Name="AutosaveCheckBox" Content="AutoSave" VerticalAlignment="Center" IsChecked="{Binding IsAutosaveEnabled}" Checked="AutosaveCheckBox_Checked"/>
                         </UniformGrid>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox BorderThickness="0" Background="{StaticResource DarkBackgroundBrush}" Margin="5,0,5,5" Padding="5">
+                    <GroupBox.Header>
+                        <Label Content="Graph" FontSize="20" FontWeight="Bold" Foreground="#6b8094"/>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <Button x:Name="ClearButton" Content="Clear Plot" Margin="0,0,5,0" Click="ClearButton_Click"/>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>

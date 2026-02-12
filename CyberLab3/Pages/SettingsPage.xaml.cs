@@ -17,16 +17,16 @@ using System.Windows.Shapes;
 namespace CyberLab3.Pages
 {
     /// <summary>
-    /// Logika interakcji dla klasy DatabasePage.xaml
+    /// Logika interakcji dla klasy LasersPage.xaml
     /// </summary>
-    public partial class DatabasePage : Page
+    public partial class SettingsPage : Page
     {
-        DatabasePageViewModel DBVM;
-        public DatabasePage(DatabasePageViewModel _viewModel)
+        SettingsViewModel STVM;
+        public SettingsPage(SettingsViewModel _VM)
         {
             InitializeComponent();
-            DBVM = _viewModel;
-            DataContext = DBVM;
+            STVM = _VM;
+            DataContext = STVM;
         }
     }
 }

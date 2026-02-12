@@ -1,7 +1,6 @@
 ﻿using CyberLab3.Pages;
 using CyberLab3.Resources.Controls;
 using CyberLab3.ViewModels;
-using SqliteWpfApp;
 using System;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -47,7 +46,8 @@ namespace CyberLab3
         TemperaturePageViewModel TemperaturePageVM = new TemperaturePageViewModel();
         ThermalChamberViewModel ThermalChamberPageVM = new ThermalChamberViewModel();
         CyberLabPageViewModel CyberLabPageViewModel = new CyberLabPageViewModel();
-        DatabasePageViewModel DatabasePageViewModel = new DatabasePageViewModel();
+        DevToolsViewModel DevToolsViewModel = new DevToolsViewModel();
+        SettingsViewModel SettingsViewModel = new SettingsViewModel();
         //Strony
         AttenuationPage attenuationPage_;
         HomePage HomePage_;
@@ -58,25 +58,25 @@ namespace CyberLab3
         TemperaturePage TemperaturePage_;
         ThermalChamberPage ThermalChamberPage_;
         CyberLabPage CyberLabPage_;
-        DatabasePage DatabasePage_;
-        public DatabaseContext db = new DatabaseContext();
+        SettingsPage SettingsPage_;
+        DevToolsPage DevToolsPage_;
         public TimerViewModel TimerVM { get; } = new TimerViewModel();
         public MainWindow()
         {
             InitializeComponent();
             PreventSleep();
-            db.Database.EnsureCreated(); // Tworzy bazę danych, jeśli nie istnieje
             DataContext = TimerVM;
             attenuationPage_ = new AttenuationPage(AttenuationPageVM);
             HomePage_ = new HomePage(HomePageVM);
             InterrogatorPage_ = new InterrogatorPage(InterrogatorPageVM);
             LasersPage_ = new LasersPage(LasersPageVM);
-            OsaPage_ = new OsaPage(OsaPageVM, db);
+            OsaPage_ = new OsaPage(OsaPageVM);
             SwitchPage_ = new SwitchPage(SwitchPageVM);
             TemperaturePage_ = new TemperaturePage(TemperaturePageVM);
             ThermalChamberPage_ = new ThermalChamberPage(ThermalChamberPageVM, OsaPageVM);
             CyberLabPage_ = new CyberLabPage(CyberLabPageViewModel);
-            DatabasePage_ = new DatabasePage(DatabasePageViewModel);
+            SettingsPage_ = new SettingsPage(SettingsViewModel);
+            DevToolsPage_ = new DevToolsPage(DevToolsViewModel);
             sideBar.SelectedIndex = 0;
         }
         void PreventSleep()
@@ -117,9 +117,6 @@ namespace CyberLab3
                         break;
                     case "CyberLab":
                         navFrame.Navigate(CyberLabPage_);
-                        break;
-                    case "Database":
-                        navFrame.Navigate(DatabasePage_);
                         break;
                 }
                 //navFrame.Navigate(selected.NavLink);

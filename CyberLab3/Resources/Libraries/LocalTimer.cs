@@ -10,13 +10,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Timers;
 
 namespace CyberLab3.Resources.Libraries
 {
     public class LocalTimer : INotifyPropertyChanged
     {
-        private readonly DispatcherTimer Timer;
-        private readonly DispatcherTimer Counter;
+        private readonly System.Timers.Timer Timer;
+        private readonly System.Timers.Timer Counter;
         public TimeSpan _time;
         public TimeSpan estTime = TimeSpan.Zero;
         private Visibility isTimerEnabled;
@@ -30,20 +31,20 @@ namespace CyberLab3.Resources.Libraries
         {
             Interval = intervalSeconds;
             Time = TimeSpan.FromSeconds(Interval);
-            Timer = new DispatcherTimer
+            Timer = new System.Timers.Timer
             {
-                Interval = TimeSpan.FromSeconds(1)
+                Interval = 1000
             };
-            Timer.Tick += (s, e) =>
+            Timer.Elapsed += (s, e) =>
             {
+                if(Time.TotalSeconds > 0)
+                {
+                    Time = Time.Subtract(TimeSpan.FromSeconds(1));
+                }
                 if(Time.TotalSeconds <= 0)
                 {
                     TimerElapsed?.Invoke(this, EventArgs.Empty);
                     Time = TimeSpan.FromSeconds(Interval);
-                }
-                else
-                {
-                    Time = Time.Subtract(TimeSpan.FromSeconds(1));
                 }
             };
             this.TimerElapsed += TimerElapsedHandler;

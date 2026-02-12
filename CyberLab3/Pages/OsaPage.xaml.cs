@@ -13,7 +13,6 @@ using ScottPlot;
 using ScottPlot.Plottables;
 using ScpiNet;
 using SkiaSharp;
-using SqliteWpfApp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -71,13 +70,10 @@ namespace CyberLab3.Pages
         private Task _workerTask;
         public bool IsBGTaskRunning => _workerTask != null && !_workerTask.IsCompleted;
 
-        public OsaPage(OsaPageViewModel _VM, DatabaseContext db)
+        public OsaPage(OsaPageViewModel _VM)
         {
             InitializeComponent();
             csvFolderPath = defaultOsaFolderPath;
-            var latest = db.Measurements
-                                .OrderByDescending(m => m.Time)
-                                .FirstOrDefault();
             progressIndicator = new Progress<int>(value =>
             {
                 MeasurementProgressBar.Value = value;
@@ -115,23 +111,6 @@ namespace CyberLab3.Pages
             }
             OPVM.OSAplot.Refresh();
             OPVM.IpAddress = "172.16.2.80";
-            using (var context = new DatabaseContext())
-            {
-                var connection = context.Database.GetDbConnection();
-                connection.Open(); // Otwarcie połączenia
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name LIMIT 1;";
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            string tableName = reader.GetString(0);
-                            tableComboBox.Items.Add(tableName);
-                        }
-                    }
-                }
-            }
             if(tableComboBox.Items.Count>0)
             {
                 tableComboBox.SelectedIndex = 0;
@@ -329,22 +308,7 @@ namespace CyberLab3.Pages
                 ElapsedTimeTextBlock.Foreground = OPVM.ElapsedMs < OPVM.LocalTimer.Interval*1000 ? Brushes.Green : Brushes.Red;
                 if(cyberLabEnabled)
                 {
-                    if (dataBaseEnabled)
-                    {
-                        using (var context = new DatabaseContext())
-                        {
-                            var latest = context.Measurements
-                                .OrderByDescending(m => m.Id)
-                                .FirstOrDefault();
-                            if (latest.Id == currentMeasure.Id) currentMeasure.Id += 1;
-                            context.Measurements.Add(currentMeasure);
-                            context.SaveChanges();
-                        }
-                    }
-                    else
-                    {
-                        saveToCSV();
-                    }
+                    saveToCSV();
                 }
                 OPVM.LocalMeasNum += 1;
             }
